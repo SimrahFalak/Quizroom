@@ -1,9 +1,5 @@
 
-  # Online Class Marker System UI
-
-  This is a code bundle for Online Class Marker System UI. The original project is available at https://www.figma.com/design/PTeHiYepV438nCbkUdGi8c/Online-Class-Marker-System-UI.
-
-  ## Running the code
+  # Quizroom
 
   Run `npm i` to install the dependencies.
 

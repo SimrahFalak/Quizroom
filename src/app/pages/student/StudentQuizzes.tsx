@@ -37,7 +37,6 @@ export default function StudentQuizzes() {
       totalMarks: 100,
       deadline: 'March 5, 2026',
       status: 'completed',
-      score: 85,
       questions: 25,
     },
     {
@@ -79,7 +78,7 @@ export default function StudentQuizzes() {
           <button
             key={tab}
             onClick={() => setFilter(tab)}
-            className={`flex-1 py-3 px-6 rounded-lg font-medium transition-all capitalize ${
+            className={`flex-1 py-3 px-6 cursor-pointer rounded-lg font-medium transition-all capitalize ${
               filter === tab
                 ? 'bg-gradient-to-r from-[#6C4EFF] to-[#9A7BFF] text-white shadow-md'
                 : 'text-gray-600 hover:bg-gray-50'
@@ -130,13 +129,7 @@ export default function StudentQuizzes() {
                   </div>
                 </div>
 
-                {quiz.status === 'completed' && quiz.score && (
-                  <div className="mt-3 p-3 bg-green-50 rounded-lg">
-                    <p className="text-sm">
-                      Your Score: <span className="font-bold text-green-700">{quiz.score}/{quiz.totalMarks}</span>
-                    </p>
-                  </div>
-                )}
+                
               </div>
 
               {/* Action Button */}

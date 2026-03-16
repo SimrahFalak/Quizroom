@@ -1,48 +1,45 @@
-import { Search, Filter } from 'lucide-react';
+import { Search, Filter, BookOpen, Plus } from 'lucide-react';
 import { Card } from '../../components/ui/card';
-import ProgressBar from '../../components/ui/ProgressBar';
+import { Button } from '../../components/ui/button';
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '../../components/ui/dialog';
+import { Input } from '../../components/ui/input';
 
 export default function StudentCourses() {
+  const COURSE_COLOR = '#6C4EFF';
+
   const courses = [
     {
       id: 1,
       title: 'Web Development',
       instructor: 'Yerbolat Yerkebulan',
-      progress: 75,
-      totalLessons: 24,
-      completedLessons: 18,
       nextQuiz: 'March 15, 2026',
-      color: '#6C4EFF',
     },
     {
       id: 2,
       title: 'Data Science',
       instructor: 'Manarbek Adilet',
-      progress: 60,
-      totalLessons: 30,
-      completedLessons: 18,
       nextQuiz: 'March 20, 2026',
-      color: '#7B61FF',
     },
     {
       id: 3,
       title: 'Mobile Development',
       instructor: 'Sarah Johnson',
-      progress: 45,
-      totalLessons: 20,
-      completedLessons: 9,
       nextQuiz: 'March 18, 2026',
-      color: '#9A7BFF',
     },
     {
       id: 4,
       title: 'Graphic Design',
       instructor: 'Ashley Akhmetov',
-      progress: 80,
-      totalLessons: 16,
-      completedLessons: 13,
       nextQuiz: 'March 22, 2026',
-      color: '#FF9B9B',
     },
   ];
 
@@ -52,12 +49,39 @@ export default function StudentCourses() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-800 mb-2">My Courses</h1>
-          <p className="text-gray-600">Track your progress and upcoming quizzes</p>
+          <p className="text-gray-600">Explore your enrolled courses and upcoming quizzes</p>
         </div>
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button className="px-5 py-4 rounded-lg cursor-pointer bg-[#6C4EFF] text-white hover:bg-[#5a3fe0] font-medium hover:shadow-lg transition-all flex items-center gap-2">
+              <Plus className="w-6 h-6" />
+              Add Course
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-md p-7">
+            <DialogHeader className="mb-6">
+              <DialogTitle>Enroll in a Course</DialogTitle>
+              
+            </DialogHeader>
+
+            <Input
+              type="text"
+              label="Course Code"
+              placeholder="e.g. WEB-2026-01"
+              className="h-11"
+            />
+
+            <DialogFooter className="mt-4 gap-3">
+              <Button className="h-11 cursor-pointer px-6 bg-[#6C4EFF] text-white hover:bg-[#5a3fe0]">
+                Enroll Course
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {/* Search and Filter */}
-      <div className="flex gap-4">
+      {/* <div className="flex gap-4">
         <div className="flex-1 relative">
           <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
           <input
@@ -70,7 +94,7 @@ export default function StudentCourses() {
           <Filter className="w-5 h-5" />
           Filter
         </button>
-      </div>
+      </div> */}
 
       {/* Courses Grid */}
       <div className="grid md:grid-cols-2 gap-6">
@@ -79,7 +103,7 @@ export default function StudentCourses() {
             {/* Color accent */}
             <div
               className="absolute top-0 left-0 right-0 h-2"
-              style={{ backgroundColor: course.color }}
+              style={{ backgroundColor: COURSE_COLOR }}
             />
 
             <div className="pt-2">
@@ -89,22 +113,11 @@ export default function StudentCourses() {
                   <p className="text-sm text-gray-500">by {course.instructor}</p>
                 </div>
                 <div
-                  className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl"
-                  style={{ backgroundColor: `${course.color}20` }}
+                  className="w-12 h-12 rounded-xl flex items-center justify-center"
+                  style={{ backgroundColor: `${COURSE_COLOR}20` }}
                 >
-                  📚
+                  <BookOpen className="w-6 h-6" style={{ color: COURSE_COLOR }} />
                 </div>
-              </div>
-
-              {/* Progress */}
-              <div className="mb-4">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-gray-600">Course Progress</span>
-                  <span className="text-sm font-semibold" style={{ color: course.color }}>
-                    {course.completedLessons}/{course.totalLessons} lessons
-                  </span>
-                </div>
-                <ProgressBar percentage={course.progress} color={course.color} />
               </div>
 
               {/* Info Grid */}
@@ -116,7 +129,7 @@ export default function StudentCourses() {
                 <div className="text-right">
                   <button
                     className="px-4 py-2 rounded-lg font-medium text-white text-sm hover:shadow-lg transition-all"
-                    style={{ backgroundColor: course.color }}
+                    style={{ backgroundColor: COURSE_COLOR }}
                   >
                     Continue
                   </button>

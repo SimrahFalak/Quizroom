@@ -53,10 +53,10 @@ export default function LandingPage() {
             </div>
             
             <div className="flex items-center gap-4">
-              <Button variant="ghost" onClick={() => navigate('/login')}>
+              <Button className="cursor-pointer" variant="outline" onClick={() => navigate('/login')}>
                 Login
               </Button>
-              <Button onClick={() => navigate('/register')}>
+              <Button className="cursor-pointer" onClick={() => navigate('/register')}>
                 Get Started
               </Button>
             </div>
@@ -78,22 +78,17 @@ export default function LandingPage() {
               <div className="flex gap-4">
                 <Button 
                   variant="secondary" 
+                  className='cursor-pointer'
                   size="lg"
                   onClick={() => navigate('/register')}
                 >
                   Start Free Trial
                 </Button>
-                <Button 
-                  variant="outline" 
-                  size="lg"
-                  className="bg-white/10 border-white text-white hover:bg-white hover:text-[#6C4EFF]"
-                >
-                  Watch Demo
-                </Button>
+               
               </div>
               
               {/* Stats */}
-              <div className="grid grid-cols-3 gap-6 mt-12">
+              {/* <div className="grid grid-cols-3 gap-6 mt-12">
                 <div>
                   <div className="text-3xl font-bold">50K+</div>
                   <div className="text-white/80">Active Students</div>
@@ -106,7 +101,7 @@ export default function LandingPage() {
                   <div className="text-3xl font-bold">100K+</div>
                   <div className="text-white/80">Quizzes Created</div>
                 </div>
-              </div>
+              </div> */}
             </div>
 
             <div className="relative">
@@ -239,6 +234,7 @@ export default function LandingPage() {
           <Button 
             variant="secondary" 
             size="lg"
+            className='cursor-pointer'
             onClick={() => navigate('/register')}
           >
             Get Started for Free

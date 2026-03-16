@@ -3,6 +3,8 @@ import { Card } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 
 export default function TeacherCourses() {
+  const COURSE_COLOR = '#6C4EFF';
+
   const courses = [
     {
       id: 1,
@@ -11,7 +13,6 @@ export default function TeacherCourses() {
       studentsEnrolled: 48,
       quizzesCreated: 12,
       averageScore: 85,
-      color: '#6C4EFF',
     },
     {
       id: 2,
@@ -20,7 +21,6 @@ export default function TeacherCourses() {
       studentsEnrolled: 52,
       quizzesCreated: 10,
       averageScore: 72,
-      color: '#7B61FF',
     },
     {
       id: 3,
@@ -29,7 +29,6 @@ export default function TeacherCourses() {
       studentsEnrolled: 45,
       quizzesCreated: 8,
       averageScore: 78,
-      color: '#9A7BFF',
     },
     {
       id: 4,
@@ -38,7 +37,6 @@ export default function TeacherCourses() {
       studentsEnrolled: 38,
       quizzesCreated: 6,
       averageScore: 88,
-      color: '#FF9B9B',
     },
   ];
 
@@ -50,7 +48,7 @@ export default function TeacherCourses() {
           <h1 className="text-3xl font-bold text-gray-800 mb-2">My Courses</h1>
           <p className="text-gray-600">Manage your courses and track student progress</p>
         </div>
-        <Button className="flex items-center gap-2">
+        <Button className="flex items-center gap-2 bg-[#6C4EFF] text-white hover:bg-[#5a3fe0]">
           <Plus className="w-5 h-5" />
           Create New Course
         </Button>
@@ -63,7 +61,7 @@ export default function TeacherCourses() {
             {/* Color accent */}
             <div
               className="absolute top-0 left-0 right-0 h-3"
-              style={{ backgroundColor: course.color }}
+              style={{ backgroundColor: COURSE_COLOR }}
             />
 
             <div className="pt-3">
@@ -80,9 +78,9 @@ export default function TeacherCourses() {
                   <div className="flex items-center justify-center mb-2">
                     <div
                       className="w-10 h-10 rounded-lg flex items-center justify-center"
-                      style={{ backgroundColor: `${course.color}20` }}
+                      style={{ backgroundColor: `${COURSE_COLOR}20` }}
                     >
-                      <Users className="w-5 h-5" style={{ color: course.color }} />
+                      <Users className="w-5 h-5" style={{ color: COURSE_COLOR }} />
                     </div>
                   </div>
                   <div className="text-2xl font-bold text-gray-800">{course.studentsEnrolled}</div>
@@ -93,9 +91,9 @@ export default function TeacherCourses() {
                   <div className="flex items-center justify-center mb-2">
                     <div
                       className="w-10 h-10 rounded-lg flex items-center justify-center"
-                      style={{ backgroundColor: `${course.color}20` }}
+                      style={{ backgroundColor: `${COURSE_COLOR}20` }}
                     >
-                      <FileQuestion className="w-5 h-5" style={{ color: course.color }} />
+                      <FileQuestion className="w-5 h-5" style={{ color: COURSE_COLOR }} />
                     </div>
                   </div>
                   <div className="text-2xl font-bold text-gray-800">{course.quizzesCreated}</div>
@@ -106,9 +104,9 @@ export default function TeacherCourses() {
                   <div className="flex items-center justify-center mb-2">
                     <div
                       className="w-10 h-10 rounded-lg flex items-center justify-center"
-                      style={{ backgroundColor: `${course.color}20` }}
+                      style={{ backgroundColor: `${COURSE_COLOR}20` }}
                     >
-                      <BarChart3 className="w-5 h-5" style={{ color: course.color }} />
+                      <BarChart3 className="w-5 h-5" style={{ color: COURSE_COLOR }} />
                     </div>
                   </div>
                   <div className="text-2xl font-bold text-gray-800">{course.averageScore}%</div>
@@ -120,7 +118,7 @@ export default function TeacherCourses() {
               <div className="flex gap-3">
                 <button
                   className="flex-1 py-3 rounded-xl font-semibold text-white transition-all hover:shadow-lg"
-                  style={{ backgroundColor: course.color }}
+                  style={{ backgroundColor: COURSE_COLOR }}
                 >
                   View Course
                 </button>

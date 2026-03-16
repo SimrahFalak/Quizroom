@@ -151,42 +151,16 @@ export default function TeacherNotifications() {
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Type</label>
-                <select className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-[#6C4EFF] focus:outline-none">
-                  <option>General Announcement</option>
-                  <option>Quiz Reminder</option>
-                  <option>Results Published</option>
-                  <option>Deadline Change</option>
-                  <option>Course Update</option>
-                </select>
-              </div>
+            
 
-              <Button className="w-full flex items-center justify-center gap-2">
+              <Button className="w-full flex items-center justify-center gap-2 bg-[#6C4EFF] text-white hover:bg-[#5a3fe0]">
                 <Send className="w-5 h-5" />
                 Send Announcement
               </Button>
             </div>
           </Card>
 
-          {/* Stats */}
-          <Card className="mt-6">
-            <h3 className="font-bold text-lg mb-4">Notification Stats</h3>
-            <div className="space-y-3">
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">Total Sent</span>
-                <span className="font-bold text-gray-800">248</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">This Week</span>
-                <span className="font-bold text-gray-800">32</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">Pending</span>
-                <span className="font-bold text-[#6C4EFF]">{unreadCount}</span>
-              </div>
-            </div>
-          </Card>
+         
         </div>
       </div>
     </div>

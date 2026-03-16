@@ -1,4 +1,4 @@
-import { Trophy, TrendingUp, TrendingDown } from 'lucide-react';
+import { Trophy } from 'lucide-react';
 import { Card } from '../../components/ui/card';
 import ProgressBar from '../../components/ui/ProgressBar';
 
@@ -55,7 +55,7 @@ export default function StudentResults() {
       </div>
 
       {/* Overall Stats */}
-      <div className="grid md:grid-cols-4 gap-6">
+      <div className="grid md:grid-cols-3 gap-6">
         <Card className="text-center">
           <div className="text-3xl font-bold text-[#6C4EFF] mb-2">{overallStats.totalQuizzes}</div>
           <div className="text-sm text-gray-600">Total Quizzes</div>
@@ -68,13 +68,7 @@ export default function StudentResults() {
           <div className="text-3xl font-bold text-blue-600 mb-2">{overallStats.passRate}%</div>
           <div className="text-sm text-gray-600">Pass Rate</div>
         </Card>
-        <Card className="text-center">
-          <div className="flex items-center justify-center gap-2 text-3xl font-bold text-green-600 mb-2">
-            <TrendingUp className="w-8 h-8" />
-            {overallStats.improvement}
-          </div>
-          <div className="text-sm text-gray-600">Improvement</div>
-        </Card>
+        
       </div>
 
       {/* Results List */}
@@ -83,11 +77,7 @@ export default function StudentResults() {
           <Card key={result.id} className="hover:shadow-xl transition-all">
             <div className="flex items-start gap-6">
               {/* Icon */}
-              <div className={`w-16 h-16 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                result.passFail === 'Pass' 
-                  ? 'bg-gradient-to-br from-green-400 to-green-600' 
-                  : 'bg-gradient-to-br from-red-400 to-red-600'
-              }`}>
+              <div className="w-16 h-16 rounded-xl flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-[#6C4EFF] to-[#9A7BFF]">
                 <Trophy className="w-8 h-8 text-white" />
               </div>
 
@@ -126,17 +116,6 @@ export default function StudentResults() {
                   </div>
                 </div>
 
-                {/* Actions */}
-                <div className="flex gap-3">
-                  <button className="px-4 py-2 bg-[#6C4EFF] text-white rounded-lg text-sm font-medium hover:shadow-lg transition-all">
-                    View Detailed Results
-                  </button>
-                  {result.passFail === 'Fail' && (
-                    <button className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-300 transition-all">
-                      Retake Quiz
-                    </button>
-                  )}
-                </div>
               </div>
             </div>
           </Card>

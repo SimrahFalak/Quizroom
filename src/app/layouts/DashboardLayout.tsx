@@ -11,7 +11,7 @@ export default function DashboardLayout() {
       <Sidebar role={role} />
       
       <div className="ml-64">
-        <Navbar userName="Adiya Akhmetova" userRole={role === 'student' ? 'Management' : 'Instructor'} />
+        <Navbar userName="Simrah Falak" userRole={role === 'student' ? 'Management' : 'Instructor'} />
         
         <main className="p-8">
           <Outlet />

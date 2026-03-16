@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
-import { GraduationCap, Mail, Lock, ArrowRight } from 'lucide-react';
+import { GraduationCap, Mail, Lock, ArrowRight, BookOpen, BarChart2 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Card } from '../components/ui/card';
@@ -41,7 +41,7 @@ export default function LoginPage() {
             <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 animate-float">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 bg-yellow-400 rounded-xl flex items-center justify-center">
-                  📚
+                  <BookOpen className="w-6 h-6 text-white" />
                 </div>
                 <div>
                   <div className="font-semibold">50+ Courses Available</div>
@@ -53,7 +53,7 @@ export default function LoginPage() {
             <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 animate-float" style={{ animationDelay: '0.2s' }}>
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 bg-green-400 rounded-xl flex items-center justify-center">
-                  ✓
+                  <BarChart2 className="w-6 h-6 text-white" />
                 </div>
                 <div>
                   <div className="font-semibold">Track Your Progress</div>

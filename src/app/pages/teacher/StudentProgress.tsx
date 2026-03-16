@@ -74,7 +74,7 @@ export default function StudentProgress() {
           <h1 className="text-3xl font-bold text-gray-800 mb-2">Student Progress</h1>
           <p className="text-gray-600">Track and monitor student performance</p>
         </div>
-        <Button className="flex items-center gap-2">
+        <Button className="flex items-center gap-2 bg-[#6C4EFF] text-white hover:bg-[#5a3fe0]">
           <Download className="w-5 h-5" />
           Export Report
         </Button>

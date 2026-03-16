@@ -138,27 +138,14 @@ export default function CreateQuiz() {
               />
             </div>
 
-            {/* Options */}
-            <div>
-              <h3 className="font-bold text-lg mb-4">Quiz Options</h3>
-              <div className="space-y-3">
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <input type="checkbox" className="w-5 h-5 rounded border-gray-300" />
-                  <span className="text-gray-700">Enable negative marking</span>
-                </label>
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <input type="checkbox" className="w-5 h-5 rounded border-gray-300" />
-                  <span className="text-gray-700">Randomize questions</span>
-                </label>
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <input type="checkbox" className="w-5 h-5 rounded border-gray-300" />
-                  <span className="text-gray-700">Allow multiple attempts</span>
-                </label>
-              </div>
-            </div>
+         
 
             <div className="flex justify-end">
-              <Button size="lg" onClick={() => setStep(2)}>
+              <Button
+                size="lg"
+                onClick={() => setStep(2)}
+                className="bg-[#6C4EFF] text-white hover:bg-[#5a3fe0]"
+              >
                 Next: Add Questions →
               </Button>
             </div>
@@ -316,7 +303,7 @@ export default function CreateQuiz() {
                 <Save className="w-5 h-5" />
                 Save Draft
               </Button>
-              <Button className="flex-1">
+              <Button className="flex-1 bg-[#6C4EFF] text-white hover:bg-[#5a3fe0]">
                 Publish Quiz
               </Button>
             </div>
