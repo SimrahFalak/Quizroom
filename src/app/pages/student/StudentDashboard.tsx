@@ -79,10 +79,10 @@ export default function StudentDashboard() {
 
           {/* My Courses */}
           <div>
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center justify-between mb-4">
               <h2 className="text-2xl font-bold text-gray-800">My courses</h2>
               <button className="text-[#6C4EFF] font-semibold hover:underline">
-                More →
+                More
               </button>
             </div>
             <div className="grid md:grid-cols-2 gap-6">
@@ -94,10 +94,10 @@ export default function StudentDashboard() {
 
           {/* Latest Results */}
           <div>
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center justify-between mb-4">
               <h2 className="text-2xl font-bold text-gray-800">Latest results</h2>
               <button className="text-[#6C4EFF] font-semibold hover:underline">
-                More →
+                More
               </button>
             </div>
             <Card>

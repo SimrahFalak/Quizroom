@@ -4,7 +4,6 @@ import {
   BookOpen, 
   FileQuestion, 
   ClipboardCheck, 
-  Users, 
   Bell, 
   Settings,
   GraduationCap,
@@ -31,7 +30,6 @@ export default function Sidebar({ role }: SidebarProps) {
     { path: `/teacher`, label: 'Dashboard', icon: LayoutDashboard },
     { path: `/teacher/courses`, label: 'Courses', icon: BookOpen },
     { path: `/teacher/create-quiz`, label: 'Create Quiz', icon: FileEdit },
-    { path: `/teacher/student-progress`, label: 'Students', icon: Users },
     { path: `/teacher/notifications`, label: 'Notifications', icon: Bell, hasUnread: true },
     { path: `/teacher/settings`, label: 'Settings', icon: Settings },
   ];

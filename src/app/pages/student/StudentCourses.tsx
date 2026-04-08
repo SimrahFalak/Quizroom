@@ -1,4 +1,5 @@
 import { Search, Filter, BookOpen, Plus } from 'lucide-react';
+import { useNavigate } from 'react-router';
 import { Card } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import {
@@ -14,6 +15,7 @@ import {
 import { Input } from '../../components/ui/input';
 
 export default function StudentCourses() {
+  const navigate = useNavigate();
   const COURSE_COLOR = '#6C4EFF';
 
   const courses = [
@@ -99,7 +101,12 @@ export default function StudentCourses() {
       {/* Courses Grid */}
       <div className="grid md:grid-cols-2 gap-6">
         {courses.map((course) => (
-          <Card key={course.id} hover className="relative overflow-hidden">
+          <Card 
+            key={course.id} 
+            hover 
+            className="relative overflow-hidden cursor-pointer"
+            onClick={() => navigate(`/student/course/${course.id}`)}
+          >
             {/* Color accent */}
             <div
               className="absolute top-0 left-0 right-0 h-2"
