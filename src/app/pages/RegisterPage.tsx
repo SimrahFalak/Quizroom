@@ -1,13 +1,19 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
-import { GraduationCap, Mail, Lock, User, Building, ArrowRight } from 'lucide-react';
+import { useDispatch, useSelector } from 'react-redux';
+import { GraduationCap, Mail, Lock, User, Building, ArrowRight, AlertCircle } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Card } from '../components/ui/card';
+import { registerStudent, registerTeacher, clearError } from '../store/authSlice';
+import { RootState, AppDispatch } from '../store/store';
 
 export default function RegisterPage() {
   const navigate = useNavigate();
+  const dispatch = useDispatch<AppDispatch>();
+  const { loading, error, isAuthenticated, user } = useSelector((state: RootState) => state.auth);
   const [role, setRole] = useState<'student' | 'teacher'>('student');
+  const [validationError, setValidationError] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -16,9 +22,46 @@ export default function RegisterPage() {
     institute: '',
   });
 
+  useEffect(() => {
+    // Redirect if already authenticated
+    if (isAuthenticated && user) {
+      navigate(user.role === 'student' ? '/student' : '/teacher');
+    }
+  }, [isAuthenticated, user, navigate]);
+
   const handleRegister = (e: React.FormEvent) => {
     e.preventDefault();
-    navigate(role === 'student' ? '/student' : '/teacher');
+    setValidationError('');
+
+    // Validation
+    if (!formData.name || !formData.email || !formData.password || !formData.institute) {
+      setValidationError('All fields are required');
+      return;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      setValidationError('Passwords do not match');
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      setValidationError('Password must be at least 6 characters');
+      return;
+    }
+
+    const payload = {
+      name: formData.name,
+      email: formData.email,
+      password: formData.password,
+      confirmPassword: formData.confirmPassword,
+      institute: formData.institute,
+    };
+
+    if (role === 'student') {
+      dispatch(registerStudent(payload));
+    } else {
+      dispatch(registerTeacher(payload));
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -26,6 +69,10 @@ export default function RegisterPage() {
       ...prev,
       [e.target.name]: e.target.value
     }));
+  };
+
+  const handleErrorClose = () => {
+    dispatch(clearError());
   };
 
   return (
@@ -73,6 +120,22 @@ export default function RegisterPage() {
             <h2 className="text-3xl font-bold text-gray-800 mb-2">Create Account</h2>
             <p className="text-gray-600">Get started with your free account</p>
           </div>
+
+          {/* Error Alert */}
+          {(error || validationError) && (
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p className="text-red-800 text-sm">{error || validationError}</p>
+              </div>
+              <button
+                onClick={handleErrorClose}
+                className="text-red-600 hover:text-red-800 text-xl font-bold"
+              >
+                ×
+              </button>
+            </div>
+          )}
 
           {/* Role Selection */}
           <div className="flex gap-4 mb-6">
@@ -181,9 +244,14 @@ export default function RegisterPage() {
               </span>
             </div>
 
-            <Button type="submit" size="lg" className="w-full flex items-center justify-center gap-2">
-              Create Account
-              <ArrowRight className="w-5 h-5" />
+            <Button 
+              type="submit" 
+              size="lg" 
+              className="w-full flex items-center justify-center gap-2"
+              disabled={loading}
+            >
+              {loading ? 'Creating Account...' : 'Create Account'}
+              {!loading && <ArrowRight className="w-5 h-5" />}
             </Button>
           </form>
 

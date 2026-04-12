@@ -10,9 +10,9 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 export default function StudentDashboard() {
   const stats = [
     { title: 'Total Courses', value: '8', icon: BookOpen, color: '#6C4EFF' },
-    { title: 'Quizzes Completed', value: '24', icon: FileQuestion, color: '#FFA500' },
+    { title: 'Total Quizzes', value: '24', icon: FileQuestion, color: '#FFA500' },
+    { title: 'Quizzes Completed', value: '12', icon: TrendingUp, color: '#FF6B9D' },
     { title: 'Average Score', value: '85%', icon: Trophy, color: '#00D084', },
-    { title: 'Ranking', value: '#12', icon: TrendingUp, color: '#FF6B9D' },
   ];
 
   const courses = [
@@ -92,30 +92,7 @@ export default function StudentDashboard() {
             </div>
           </div>
 
-          {/* Latest Results */}
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl font-bold text-gray-800">Latest results</h2>
-              <button className="text-[#6C4EFF] font-semibold hover:underline">
-                More
-              </button>
-            </div>
-            <Card>
-              <div className="space-y-4">
-                {quizResults.map((result, index) => (
-                  <div key={index} className="flex items-center gap-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className="font-semibold text-gray-800">{result.name}</span>
-                        <span className="text-sm text-gray-500">- {result.subject}</span>
-                      </div>
-                      <ProgressBar percentage={result.score} color={result.color} />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </Card>
-          </div>
+        
 
          
 
@@ -127,44 +104,7 @@ export default function StudentDashboard() {
          
           {/* Calendar */}
           <Calendar markedDates={calendarDates} />
- {/* Average Quizzes */}
-            <Card>
-              <h3 className="font-bold text-lg mb-4">Average % of quizzes</h3>
-              <div className="flex items-center justify-center py-8">
-                <div className="relative w-40 h-40">
-                  <svg className="transform -rotate-90 w-40 h-40">
-                    <circle
-                      cx="80"
-                      cy="80"
-                      r="70"
-                      stroke="#f0f0f0"
-                      strokeWidth="12"
-                      fill="none"
-                    />
-                    <circle
-                      cx="80"
-                      cy="80"
-                      r="70"
-                      stroke="#FFA500"
-                      strokeWidth="12"
-                      fill="none"
-                      strokeDasharray={`${75 * 4.4} ${100 * 4.4}`}
-                      strokeLinecap="round"
-                    />
-                  </svg>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="text-center">
-                      <div className="text-3xl font-bold text-gray-800">75.0%</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="text-center text-sm text-gray-600">
-                <p className="mb-1">798 points</p>
-                <p>you are in the top <span className="font-bold text-[#6C4EFF]">5%</span> students</p>
-              </div>
-            </Card>
-         
+ 
         </div>
       </div>
     </div>

@@ -1,20 +1,47 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
-import { GraduationCap, Mail, Lock, ArrowRight, BookOpen, BarChart2 } from 'lucide-react';
+import { useDispatch, useSelector } from 'react-redux';
+import { GraduationCap, Mail, Lock, ArrowRight, BookOpen, BarChart2, AlertCircle } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Card } from '../components/ui/card';
+import { loginStudent, loginTeacher, clearError } from '../store/authSlice';
+import { RootState, AppDispatch } from '../store/store';
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const dispatch = useDispatch<AppDispatch>();
+  const { loading, error, isAuthenticated, user } = useSelector((state: RootState) => state.auth);
   const [role, setRole] = useState<'student' | 'teacher'>('student');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleLogin = (e: React.FormEvent) => {
+  useEffect(() => {
+    // Redirect if already authenticated
+    if (isAuthenticated && user) {
+      navigate(user.role === 'student' ? '/student' : '/teacher');
+    }
+  }, [isAuthenticated, user, navigate]);
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Navigate based on role
-    navigate(role === 'student' ? '/student' : '/teacher');
+    
+    if (!email || !password) {
+      alert('Please fill in all fields');
+      return;
+    }
+
+    const payload = { email, password };
+    
+    if (role === 'student') {
+      dispatch(loginStudent(payload));
+    } else {
+      dispatch(loginTeacher(payload));
+    }
+  };
+
+  const handleErrorClose = () => {
+    dispatch(clearError());
   };
 
   return (
@@ -71,6 +98,22 @@ export default function LoginPage() {
             <p className="text-gray-600">Enter your credentials to access your account</p>
           </div>
 
+          {/* Error Alert */}
+          {error && (
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p className="text-red-800 text-sm">{error}</p>
+              </div>
+              <button
+                onClick={handleErrorClose}
+                className="text-red-600 hover:text-red-800 text-xl font-bold"
+              >
+                ×
+              </button>
+            </div>
+          )}
+
           {/* Role Selection */}
           <div className="flex gap-4 mb-6">
             <button
@@ -126,17 +169,21 @@ export default function LoginPage() {
 
             <div className="flex items-center justify-between text-sm">
               <label className="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" className="w-4 h-4 rounded border-gray-300" />
-                <span className="text-gray-600">Remember me</span>
+                
               </label>
               <a href="#" className="text-[#6C4EFF] hover:underline font-medium">
                 Forgot password?
               </a>
             </div>
 
-            <Button type="submit" size="lg" className="w-full flex items-center justify-center gap-2">
-              Sign In
-              <ArrowRight className="w-5 h-5" />
+            <Button 
+              type="submit" 
+              size="lg" 
+              className="w-full flex items-center justify-center gap-2"
+              disabled={loading}
+            >
+              {loading ? 'Signing In...' : 'Sign In'}
+              {!loading && <ArrowRight className="w-5 h-5" />}
             </Button>
           </form>
 
