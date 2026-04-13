@@ -105,7 +105,7 @@ export default function TeacherDashboard() {
       </div>
 
       {/* Recent Quizzes */}
-      <Card>
+      {/* <Card>
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-gray-800">Recent Quizzes</h2>
           <button className="text-[#6C4EFF] font-semibold hover:underline">
@@ -142,7 +142,7 @@ export default function TeacherDashboard() {
             </div>
           ))}
         </div>
-      </Card>
+      </Card> */}
 
       {/* Quick Actions */}
       {/* <div className="grid md:grid-cols-3 gap-6">

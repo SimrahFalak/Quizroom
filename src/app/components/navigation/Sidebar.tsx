@@ -49,7 +49,12 @@ export default function Sidebar({ role }: SidebarProps) {
       {/* Navigation Links */}
       <nav className="flex-1 space-y-2">
         {links.map((link) => {
-          const isActive = location.pathname === link.path;
+          // Check if the current path matches the link path
+          // For "Courses" link, also highlight when viewing course details or creating quiz
+          const isActive = link.path === `/teacher/courses`
+            ? location.pathname.startsWith(`/teacher/course`)
+            : location.pathname === link.path;
+          
           const Icon = link.icon;
           
           return (

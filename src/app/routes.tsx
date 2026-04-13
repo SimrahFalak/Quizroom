@@ -59,6 +59,7 @@ export const router = createBrowserRouter([
         children: [
           { path: "quiz/:quizId", Component: TeacherQuizDetail },
           { path: "quiz/:quizId/attempt/:studentId", Component: TeacherGradeAttempt },
+          { path: "create-quiz", Component: CreateQuiz },
         ],
       },
       { path: "create-quiz", Component: CreateQuiz },
