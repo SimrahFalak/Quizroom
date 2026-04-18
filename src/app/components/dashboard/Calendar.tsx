@@ -9,7 +9,7 @@ interface CalendarProps {
 export default function Calendar({ markedDates = [] }: CalendarProps) {
   const [currentMonth] = useState('January 2020');
   
-  const daysOfWeek = ['M', 'T', 'W', 'T', 'F', 'Sat', 'Sun'];
+  const daysOfWeek = ['M', 'T', 'W', 'Th', 'F', 'Sat', 'Sun'];
   const daysInMonth = Array.from({ length: 31 }, (_, i) => i + 1);
   
   const isMarked = (day: number, type: 'today' | 'quiz') => {

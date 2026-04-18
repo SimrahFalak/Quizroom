@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import { useDispatch, useSelector } from 'react-redux';
-import { ArrowLeft, Trophy } from 'lucide-react';
+import { ArrowLeft, Trophy, ChevronDown, ChevronUp } from 'lucide-react';
 import { Card } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import ProgressBar from '../../components/ui/ProgressBar';
 import { fetchQuizById, publishQuiz, clearSuccess, clearError } from '../../store/quizSlice';
+import { questionTypeMap } from '../../services/quizService';
 import type { AppDispatch, RootState } from '../../store/store';
 
 export default function TeacherQuizDetail() {
@@ -13,6 +14,7 @@ export default function TeacherQuizDetail() {
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const [activeTab, setActiveTab] = useState<'details' | 'submissions' | 'results'>('details');
+  const [expandedQuestions, setExpandedQuestions] = useState<Set<number>>(new Set());
 
   const { currentQuiz, loading, error, success, message } = useSelector(
     (state: RootState) => state.quiz
@@ -42,6 +44,40 @@ export default function TeacherQuizDetail() {
     } catch (err) {
       console.error('Failed to publish quiz:', err);
     }
+  };
+
+  const toggleQuestionExpanded = (index: number) => {
+    const newExpanded = new Set(expandedQuestions);
+    if (newExpanded.has(index)) {
+      newExpanded.delete(index);
+    } else {
+      newExpanded.add(index);
+    }
+    setExpandedQuestions(newExpanded);
+  };
+
+  const renderCorrectAnswer = (answer: any, questionType: string) => {
+    if (answer === null || answer === undefined) {
+      return <p className="text-gray-500">Not set</p>;
+    }
+
+    if (Array.isArray(answer)) {
+      return (
+        <div className="flex flex-wrap gap-2">
+          {answer.map((ans, idx) => (
+            <span key={idx} className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+              {ans}
+            </span>
+          ))}
+        </div>
+      );
+    }
+
+    return (
+      <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+        {String(answer)}
+      </span>
+    );
   };
 
   return (
@@ -98,7 +134,7 @@ export default function TeacherQuizDetail() {
           <div className="grid md:grid-cols-3 gap-6">
             <Card>
               <div className="text-center">
-                <div className="text-3xl font-bold text-[#6C4EFF] mb-2">0</div>
+                <div className="text-3xl font-bold text-[#6C4EFF] mb-2">{currentQuiz.attemptsCount || 0}</div>
                 <div className="text-sm text-gray-600">Total Submissions</div>
               </div>
             </Card>
@@ -110,7 +146,7 @@ export default function TeacherQuizDetail() {
             </Card>
             <Card>
               <div className="text-center">
-                <div className="text-3xl font-bold text-green-600 mb-2">0%</div>
+                <div className="text-3xl font-bold text-green-600 mb-2">{currentQuiz.avgScore || 0}%</div>
                 <div className="text-sm text-gray-600">Average Score</div>
               </div>
             </Card>
@@ -162,6 +198,132 @@ export default function TeacherQuizDetail() {
                 <h2 className="text-xl font-bold text-gray-800 mb-4">Description</h2>
                 <p className="text-gray-600">{currentQuiz.description || 'No description provided'}</p>
               </Card>
+
+              {/* Questions Section */}
+              {currentQuiz.questions && currentQuiz.questions.length > 0 && (
+                <Card>
+                  <h2 className="text-xl font-bold text-gray-800 mb-6">Questions ({currentQuiz.questions.length})</h2>
+                  <div className="space-y-4">
+                    {currentQuiz.questions.map((question, index) => {
+                      const hasAnswer = question.correctAnswer !== null && question.correctAnswer !== undefined;
+
+                      return hasAnswer ? (
+                        // Questions with answers - expandable
+                        <div key={index} className="border border-gray-200 rounded-lg overflow-hidden">
+                          <button
+                            onClick={() => toggleQuestionExpanded(index)}
+                            className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                          >
+                            <div className="text-left flex-1">
+                              <div className="flex items-center gap-3">
+                                <span className="font-bold text-[#6C4EFF] bg-purple-100 px-3 py-1 rounded-full text-sm">
+                                  Q{index + 1}
+                                </span>
+                                <span className="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-700 font-medium">
+                                  {questionTypeMap[question.type] || question.type}
+                                </span>
+                                <span className="text-xs text-gray-600 ml-auto">
+                                  {question.marks || question.points || 0} marks
+                                </span>
+                              </div>
+                              <p className="text-gray-800 font-medium mt-2">
+                                {question.question || question.prompt}
+                              </p>
+                            </div>
+                            <div className="ml-4">
+                              {expandedQuestions.has(index) ? (
+                                <ChevronUp className="w-5 h-5 text-gray-600" />
+                              ) : (
+                                <ChevronDown className="w-5 h-5 text-gray-600" />
+                              )}
+                            </div>
+                          </button>
+
+                          {/* Expanded Content */}
+                          {expandedQuestions.has(index) && (
+                            <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 space-y-4">
+                              {question.options && question.options.length > 0 && (
+                                <div>
+                                  <p className="text-sm font-semibold text-gray-700 mb-2">Options:</p>
+                                  <div className="space-y-2">
+                                    {question.options.map((option, optIdx) => (
+                                      <div
+                                        key={optIdx}
+                                        className={`p-3 rounded border ${
+                                          question.correctAnswer === option ||
+                                          question.correctAnswer === optIdx ||
+                                          (Array.isArray(question.correctAnswer) &&
+                                            question.correctAnswer.includes(option))
+                                            ? 'bg-green-50 border-green-300'
+                                            : 'bg-white border-gray-200'
+                                        }`}
+                                      >
+                                        <span className="text-sm">
+                                          {String.fromCharCode(65 + optIdx)}.{' '}
+                                          <span className="text-gray-800">{option}</span>
+                                        </span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+
+                              {question.numericTolerance !== undefined && question.numericTolerance > 0 && (
+                                <div>
+                                  <p className="text-sm font-semibold text-gray-700 mb-2">Numeric Tolerance:</p>
+                                  <p className="text-gray-800">±{question.numericTolerance}</p>
+                                </div>
+                              )}
+
+                              {question.allowedFileTypes && question.allowedFileTypes.length > 0 && (
+                                <div>
+                                  <p className="text-sm font-semibold text-gray-700 mb-2">Allowed File Types:</p>
+                                  <div className="flex flex-wrap gap-2">
+                                    {question.allowedFileTypes.map((fileType, ftIdx) => (
+                                      <span key={ftIdx} className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
+                                        {fileType}
+                                      </span>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        // Questions without answers - static display
+                        <div key={index} className="border border-gray-200 rounded-lg px-6 py-4">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-3 mb-3">
+                                <span className="font-bold text-[#6C4EFF] bg-purple-100 px-3 py-1 rounded-full text-sm">
+                                  Q{index + 1}
+                                </span>
+                                <span className="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-700 font-medium">
+                                  {questionTypeMap[question.type] || question.type}
+                                </span>
+                              </div>
+                              <p className="text-gray-800 font-medium">
+                                {question.question || question.prompt}
+                              </p>
+                            </div>
+                            <span className="text-xs text-gray-600 ml-4 whitespace-nowrap">
+                              {question.marks || question.points || 0} marks
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </Card>
+              )}
+
+              {(!currentQuiz.questions || currentQuiz.questions.length === 0) && (
+                <Card>
+                  <h2 className="text-xl font-bold text-gray-800 mb-4">Questions</h2>
+                  <p className="text-gray-500 text-center py-8">No questions added yet</p>
+                </Card>
+              )}
 
               <Card>
                 <h2 className="text-xl font-bold text-gray-800 mb-6">Status</h2>

@@ -7,7 +7,7 @@ import { Input } from '../../components/ui/input';
 import { Button } from '../../components/ui/button';
 import { createQuiz, clearSuccess, clearError } from '../../store/quizSlice';
 import { getTeacherCourses } from '../../store/courseSlice';
-import { questionTypeMap } from '../../../services/quizService';
+import { questionTypeMap } from '../../services/quizService';
 import type { AppDispatch, RootState } from '../../store/store';
 
 interface Question {

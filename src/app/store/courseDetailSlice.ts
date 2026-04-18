@@ -4,7 +4,7 @@ import courseDetailAPI, {
   Quiz,
   EnrolledStudent,
   Submission,
-} from "../../services/courseDetailService";
+} from "../services/courseDetailService";
 
 interface CourseDetailState {
   courseDetails: CourseDetails | null;

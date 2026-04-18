@@ -1,8 +1,9 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import quizAPI, { CreateQuizPayload, Quiz } from "../../services/quizService";
+import quizAPI, { CreateQuizPayload, Quiz } from "../services/quizService";
 
 interface QuizState {
   quizzes: Quiz[];
+  attempts: any[];
   currentQuiz: Quiz | null;
   loading: boolean;
   error: string | null;
@@ -12,6 +13,7 @@ interface QuizState {
 
 const initialState: QuizState = {
   quizzes: [],
+  attempts: [],
   currentQuiz: null,
   loading: false,
   error: null,
@@ -109,6 +111,59 @@ export const fetchStudentQuizzes = createAsyncThunk(
   }
 );
 
+export const fetchQuizForAttempt = createAsyncThunk(
+  "quiz/fetchQuizForAttempt",
+  async (quizId: string, { rejectWithValue }) => {
+    try {
+      const data = await quizAPI.getQuizForAttempt(quizId);
+      return data;
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to fetch quiz"
+      );
+    }
+  }
+);
+
+export const submitQuizAttempt = createAsyncThunk(
+  "quiz/submitQuizAttempt",
+  async (
+    {
+      studentId,
+      quizId,
+      answers,
+      timeSpent,
+    }: { studentId: string; quizId: string; answers: any; timeSpent: number },
+    { rejectWithValue }
+  ) => {
+    try {
+      const data = await quizAPI.submitAttempt(studentId, quizId, {
+        responses: answers,
+        timeSpent,
+      });
+      return data;
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to submit quiz"
+      );
+    }
+  }
+);
+
+export const fetchStudentAttempts = createAsyncThunk(
+  "quiz/fetchStudentAttempts",
+  async (studentId: string, { rejectWithValue }) => {
+    try {
+      const data = await quizAPI.getStudentAttempts(studentId);
+      return data;
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to fetch attempts"
+      );
+    }
+  }
+);
+
 const quizSlice = createSlice({
   name: "quiz",
   initialState,
@@ -197,6 +252,52 @@ const quizSlice = createSlice({
         state.quizzes = action.payload;
       })
       .addCase(fetchStudentQuizzes.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      });
+
+    // Fetch Quiz For Attempt
+    builder
+      .addCase(fetchQuizForAttempt.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchQuizForAttempt.fulfilled, (state, action) => {
+        state.loading = false;
+        state.currentQuiz = action.payload;
+      })
+      .addCase(fetchQuizForAttempt.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      });
+
+    // Submit Quiz Attempt
+    builder
+      .addCase(submitQuizAttempt.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(submitQuizAttempt.fulfilled, (state, action) => {
+        state.loading = false;
+        state.success = true;
+        state.message = "Quiz submitted successfully";
+      })
+      .addCase(submitQuizAttempt.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      });
+
+    // Fetch Student Attempts
+    builder
+      .addCase(fetchStudentAttempts.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchStudentAttempts.fulfilled, (state, action) => {
+        state.loading = false;
+        state.attempts = action.payload;
+      })
+      .addCase(fetchStudentAttempts.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });

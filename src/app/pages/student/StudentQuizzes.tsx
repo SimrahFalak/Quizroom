@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Clock, FileQuestion, Calendar } from 'lucide-react';
 import { Card } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
-import { fetchStudentQuizzes } from '../../store/quizSlice';
+import { fetchStudentQuizzes, fetchStudentAttempts } from '../../store/quizSlice';
 import type { AppDispatch, RootState } from '../../store/store';
 
 export default function StudentQuizzes() {
@@ -12,33 +12,49 @@ export default function StudentQuizzes() {
   const dispatch = useDispatch<AppDispatch>();
   const [filter, setFilter] = useState<'all' | 'upcoming' | 'completed' | 'missed'>('all');
 
-  const { quizzes, loading } = useSelector((state: RootState) => state.quiz);
+  const { quizzes, attempts, loading } = useSelector((state: RootState) => state.quiz);
   const { user } = useSelector((state: RootState) => state.auth);
 
-  // Fetch quizzes on component mount
+  // Fetch quizzes and attempts on component mount
   useEffect(() => {
     if (user?.id) {
       dispatch(fetchStudentQuizzes({ studentId: user.id }));
+      dispatch(fetchStudentAttempts(user.id));
     }
   }, [dispatch, user?.id]);
 
-  // Transform quizzes to include status info (this would come from API in real scenario)
-  const transformedQuizzes = quizzes.map((quiz) => {
+  // Helper function to check if quiz is attempted
+  const isQuizAttempted = (quizId: string) => {
+    return attempts.some((attempt: any) => attempt.quiz._id === quizId);
+  };
+
+  // Helper function to get quiz attempt
+  const getQuizAttempt = (quizId: string) => {
+    return attempts.find((attempt: any) => attempt.quiz._id === quizId);
+  };
+
+  // Transform quizzes to include status info
+  const transformedQuizzes = quizzes.map((quiz: any) => {
     const deadline = quiz.deadline ? new Date(quiz.deadline) : null;
     const now = new Date();
+    const attempted = isQuizAttempted(quiz._id);
     let status: 'upcoming' | 'completed' | 'missed' = 'upcoming';
     
-    if (deadline && now > deadline) {
+    if (attempted) {
+      status = 'completed';
+    } else if (deadline && now > deadline) {
       status = 'missed';
     }
+    
+    const courseTitle = typeof quiz.course === 'object' ? quiz.course?.title : 'Course';
     
     return {
       ...quiz,
       id: quiz._id,
       duration: `${quiz.durationMinutes} min`,
-      questions: 0, // Would need attempt data to determine if completed
+      questions: quiz.questions?.length || 0,
       status,
-      course: 'Course', // This would need course data from API
+      course: courseTitle,
     };
   });
 
@@ -56,7 +72,7 @@ export default function StudentQuizzes() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 min-h-screen">
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold text-gray-800 mb-2">Quizzes</h1>
@@ -81,7 +97,7 @@ export default function StudentQuizzes() {
       </div>
 
       {/* Quiz List */}
-      <div className="grid gap-6">
+      <div className="grid gap-6 ">
         {loading ? (
           <Card className="text-center py-12">
             <div className="flex justify-center items-center">
@@ -117,7 +133,7 @@ export default function StudentQuizzes() {
                     </div>
                     <div className="flex items-center gap-2 text-sm text-gray-600">
                       <FileQuestion className="w-4 h-4" />
-                      <span>{quiz.questions} questions</span>
+                      <span>{quiz.questionsCount} questions</span>
                     </div>
                     <div className="flex items-center gap-2 text-sm text-gray-600">
                       <Calendar className="w-4 h-4" />
@@ -131,6 +147,17 @@ export default function StudentQuizzes() {
 
                 {/* Action Button */}
                 <div className="flex-shrink-0">
+                  {quiz.status === 'completed' && (
+                    <Button
+                      onClick={() => {
+                        const attempt = getQuizAttempt(quiz.id);
+                        navigate(`/student/results/${attempt?._id}`, { state: { attempt, quiz } });
+                      }}
+                      className="bg-white border border-gray-300 text-gray-900 hover:bg-gray-50"
+                    >
+                      View Results
+                    </Button>
+                  )}
                   {quiz.status === 'upcoming' && (
                     <Button onClick={() => navigate(`/student/quiz/${quiz.id}`)}>
                       Start Quiz

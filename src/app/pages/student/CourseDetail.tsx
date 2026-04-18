@@ -1,14 +1,35 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router';
+import { useDispatch, useSelector } from 'react-redux';
 import { ArrowLeft, Clock, FileQuestion, Calendar, Trophy } from 'lucide-react';
 import { Card } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import ProgressBar from '../../components/ui/ProgressBar';
+import { fetchStudentQuizzes, fetchStudentAttempts } from '../../store/quizSlice';
+import type { AppDispatch, RootState } from '../../store/store';
 
 export default function CourseDetail() {
   const { courseId } = useParams();
   const navigate = useNavigate();
+  const dispatch = useDispatch<AppDispatch>();
   const [activeTab, setActiveTab] = useState<'quizzes' | 'results'>('quizzes');
+
+  const { quizzes, attempts, loading, error } = useSelector((state: RootState) => state.quiz);
+  const { user } = useSelector((state: RootState) => state.auth);
+
+  // Fetch quizzes for the course
+  useEffect(() => {
+    if (user?.id && courseId) {
+      dispatch(fetchStudentQuizzes({ studentId: user.id, courseId }));
+    }
+  }, [dispatch, user?.id, courseId]);
+
+  // Fetch student attempts
+  useEffect(() => {
+    if (user?.id) {
+      dispatch(fetchStudentAttempts(user.id));
+    }
+  }, [dispatch, user?.id]);
 
   // Mock course data
   const courseData = {
@@ -18,36 +39,36 @@ export default function CourseDetail() {
     description: 'Learn modern web development with React, TypeScript, and Tailwind CSS',
   };
 
-  // Mock quizzes for this course
-  const courseQuizzes = [
-    {
-      id: 1,
-      title: 'Web Development Quiz 1',
-      duration: '30 min',
-      totalMarks: 100,
-      deadline: 'March 15, 2026',
-      status: 'upcoming',
-      questions: 20,
-    },
-    {
-      id: 2,
-      title: 'HTML & CSS Basics',
-      duration: '25 min',
-      totalMarks: 80,
-      deadline: 'March 10, 2026',
-      status: 'completed',
-      questions: 15,
-    },
-    {
-      id: 3,
-      title: 'JavaScript Fundamentals',
-      duration: '45 min',
-      totalMarks: 120,
-      deadline: 'March 8, 2026',
-      status: 'completed',
-      questions: 25,
-    },
-  ];
+  // Check if a quiz has been attempted
+  const isQuizAttempted = (quizId: string) => {
+    return attempts.some((attempt: any) => attempt.quiz === quizId || attempt.quiz?._id === quizId);
+  };
+
+  // Get attempt for a quiz
+  const getQuizAttempt = (quizId: string) => {
+    return attempts.find((attempt: any) => attempt.quiz === quizId || attempt.quiz?._id === quizId);
+  };
+
+  // Calculate stats from real quizzes and attempts
+  const completedQuizzes = attempts.length;
+  const averageScore = attempts.length > 0 
+    ? Math.round(attempts.reduce((sum: number, att: any) => sum + (att.percentage || 0), 0) / attempts.length)
+    : 0;
+
+  const courseStats = {
+    totalQuizzes: quizzes.length,
+    completedQuizzes,
+    averageScore,
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'upcoming': return 'bg-blue-100 text-blue-700';
+      case 'completed': return 'bg-green-100 text-green-700';
+      case 'missed': return 'bg-red-100 text-red-700';
+      default: return 'bg-gray-100 text-gray-700';
+    }
+  };
 
   // Mock results for this course
   const courseResults = [
@@ -73,23 +94,8 @@ export default function CourseDetail() {
     },
   ];
 
-  const courseStats = {
-    totalQuizzes: courseQuizzes.length,
-    completedQuizzes: courseQuizzes.filter(q => q.status === 'completed').length,
-    averageScore: 84,
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'upcoming': return 'bg-blue-100 text-blue-700';
-      case 'completed': return 'bg-green-100 text-green-700';
-      case 'missed': return 'bg-red-100 text-red-700';
-      default: return 'bg-gray-100 text-gray-700';
-    }
-  };
-
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 min-h-screen">
       {/* Header with Back Button */}
       <div className="flex items-center gap-4">
         <button
@@ -146,66 +152,104 @@ export default function CourseDetail() {
       {/* Quizzes Tab */}
       {activeTab === 'quizzes' && (
         <div className="grid gap-6">
-          {courseQuizzes.map((quiz) => (
-            <Card key={quiz.id} className="hover:shadow-xl transition-all">
-              <div className="flex items-center gap-6">
-                {/* Icon */}
-                <div className="w-16 h-16 bg-gradient-to-br from-[#6C4EFF] to-[#9A7BFF] rounded-xl flex items-center justify-center flex-shrink-0">
-                  <FileQuestion className="w-8 h-8 text-white" />
-                </div>
-
-                {/* Content */}
-                <div className="flex-1">
-                  <div className="flex items-start justify-between mb-3">
-                    <div>
-                      <h3 className="text-xl font-bold text-gray-800 mb-1">{quiz.title}</h3>
-                      <p className="text-sm text-gray-500">{courseData.title}</p>
-                    </div>
-                    <span className={`px-3 py-1 rounded-full text-xs font-semibold capitalize ${getStatusColor(quiz.status)}`}>
-                      {quiz.status}
-                    </span>
-                  </div>
-
-                  <div className="grid grid-cols-4 gap-4">
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                      <Clock className="w-4 h-4" />
-                      <span>{quiz.duration}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                      <FileQuestion className="w-4 h-4" />
-                      <span>{quiz.questions} questions</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                      <Calendar className="w-4 h-4" />
-                      <span>{quiz.deadline}</span>
-                    </div>
-                    <div className="text-sm text-gray-600">
-                      <span className="font-semibold">{quiz.totalMarks}</span> total marks
-                    </div>
-                  </div>
-                </div>
-
-                {/* Action Button */}
-                <div className="flex-shrink-0">
-                  {quiz.status === 'upcoming' && (
-                    <Button onClick={() => navigate(`/student/quiz/${quiz.id}`)}>
-                      Start Quiz
-                    </Button>
-                  )}
-                  {quiz.status === 'completed' && (
-                    <Button variant="outline">
-                      View Results
-                    </Button>
-                  )}
-                  {quiz.status === 'missed' && (
-                    <Button variant="ghost" disabled>
-                      Missed
-                    </Button>
-                  )}
-                </div>
-              </div>
+          {loading ? (
+            // Loading skeleton
+            <div className="space-y-4">
+              {[1, 2, 3].map((item) => (
+                <div key={item} className="h-32 bg-gray-200 rounded-xl animate-pulse" />
+              ))}
+            </div>
+          ) : error ? (
+            // Error state
+            <Card className="p-8 text-center border-red-200 bg-red-50">
+              <p className="text-red-700 font-semibold">{error}</p>
             </Card>
-          ))}
+          ) : quizzes.length === 0 ? (
+            // Empty state
+            <Card className="p-8 text-center">
+              <FileQuestion className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-gray-600 mb-2">No quizzes available</h3>
+              <p className="text-gray-500">No quizzes have been published for this course yet.</p>
+            </Card>
+          ) : (
+            // Quizzes list
+            quizzes.map((quiz: any) => {
+              const isPublished = quiz.isPublished;
+              const attempted = isQuizAttempted(quiz._id);
+              const status = attempted ? 'completed' : isPublished ? 'published' : 'draft';
+              
+              return (
+                <Card key={quiz._id} className="hover:shadow-xl transition-all">
+                  <div className="flex items-center gap-6">
+                    {/* Icon */}
+                    <div className="w-16 h-16 bg-gradient-to-br from-[#6C4EFF] to-[#9A7BFF] rounded-xl flex items-center justify-center flex-shrink-0">
+                      <FileQuestion className="w-8 h-8 text-white" />
+                    </div>
+
+                    {/* Content */}
+                    <div className="flex-1">
+                      <div className="flex items-start justify-between mb-3">
+                        <div>
+                          <h3 className="text-xl font-bold text-gray-800 mb-1">{quiz.title}</h3>
+                          <p className="text-sm text-gray-500">{courseData.title}</p>
+                        </div>
+                        <span className={`px-3 py-1 rounded-full text-xs font-semibold capitalize ${
+                          attempted
+                            ? 'bg-green-100 text-green-700'
+                            : isPublished 
+                            ? 'bg-blue-100 text-blue-700'
+                            : 'bg-gray-100 text-gray-700'
+                        }`}>
+                          {status === 'completed' ? 'Completed' : status === 'published' ? 'Published' : 'Draft'}
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-4 gap-4">
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <Clock className="w-4 h-4" />
+                          <span>{quiz.durationMinutes || 30} min</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <FileQuestion className="w-4 h-4" />
+                          <span>{quiz.questionsCount || 0} questions</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <Calendar className="w-4 h-4" />
+                          <span>{quiz.deadline ? new Date(quiz.deadline).toLocaleDateString() : 'No deadline'}</span>
+                        </div>
+                        <div className="text-sm text-gray-600">
+                          <span className="font-semibold">{quiz.totalMarks || 0}</span> total marks
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Action Button */}
+                    <div className="flex-shrink-0">
+                      {attempted ? (
+                        <Button
+                          onClick={() => {
+                            const attempt = getQuizAttempt(quiz._id);
+                            navigate(`/student/results/${attempt?._id}`, { state: { attempt, quiz } });
+                          }}
+                          className="bg-white border border-gray-300 text-gray-900 hover:bg-gray-50"
+                        >
+                          View Results
+                        </Button>
+                      ) : isPublished ? (
+                        <Button onClick={() => navigate(`/student/quiz/${quiz._id}`)}>
+                          Start Quiz
+                        </Button>
+                      ) : (
+                        <Button variant="ghost" disabled>
+                          Not Published
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </Card>
+              );
+            })
+          )}
         </div>
       )}
 
