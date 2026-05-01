@@ -10,6 +10,16 @@ import { getTeacherCourses } from '../../store/courseSlice';
 import { questionTypeMap } from '../../services/quizService';
 import type { AppDispatch, RootState } from '../../store/store';
 
+const questionTypeApiMap: Record<string, string> = {
+  mcq: 'MCQ_SINGLE',
+  multiple: 'MCQ_MULTIPLE',
+  truefalse: 'TRUE_FALSE',
+  short: 'SHORT_ANSWER',
+  long: 'LONG_ANSWER',
+  file: 'FILE_UPLOAD',
+  numeric: 'NUMERIC',
+};
+
 interface Question {
   id: number;
   type: string;
@@ -124,7 +134,7 @@ export default function CreateQuiz() {
 
     // Transform questions to match backend format
     const transformedQuestions = questions.map((q) => ({
-      type: questionTypeMap[q.type] || q.type,
+      type: questionTypeApiMap[q.type] || q.type,
       prompt: q.question,
       options: q.options.filter((o) => o.trim()),
       correctAnswer: q.correctAnswer,
@@ -181,7 +191,7 @@ export default function CreateQuiz() {
 
     // Transform questions to match backend format
     const transformedQuestions = questions.map((q) => ({
-      type: questionTypeMap[q.type] || q.type,
+      type: questionTypeApiMap[q.type] || q.type,
       prompt: q.question,
       options: q.options.filter((o) => o.trim()),
       correctAnswer: q.correctAnswer,

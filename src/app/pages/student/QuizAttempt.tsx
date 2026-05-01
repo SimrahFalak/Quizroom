@@ -78,7 +78,7 @@ export default function QuizAttempt() {
       // Transform answers object to array format expected by backend
       const responses = quiz.questions.map((question: any, index: number) => ({
         questionId: question._id,
-        response: answers[index] || null,
+        answer: answers[index] || null,
       }));
 
       await dispatch(

@@ -121,7 +121,7 @@ export default function StudentCourses() {
         <div key={i} className="relative overflow-hidden cursor-pointer">
           <div
             className="absolute top-0 left-0 right-0 h-2"
-            style={{ backgroundColor: COURSE_COLOR }}
+            
           />
           <div className="p-6 bg-white rounded-lg border border-gray-200 animate-pulse">
             <div className="h-6 bg-gray-200 rounded w-3/4 mb-2"></div>

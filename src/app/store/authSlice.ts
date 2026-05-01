@@ -58,6 +58,10 @@ export const loginStudent = createAsyncThunk<AuthResponse, LoginPayload>(
       const response = await authAPI.loginStudent(payload);
       return response.data;
     } catch (error: any) {
+      // Distinguish between network errors and server errors
+      if (!error.response) {
+        return rejectWithValue("Server is not responding. Please check your connection and try again.");
+      }
       return rejectWithValue(error.response?.data?.message || "Login failed");
     }
   }
@@ -70,6 +74,10 @@ export const loginTeacher = createAsyncThunk<AuthResponse, LoginPayload>(
       const response = await authAPI.loginTeacher(payload);
       return response.data;
     } catch (error: any) {
+      // Distinguish between network errors and server errors
+      if (!error.response) {
+        return rejectWithValue("Server is not responding. Please check your connection and try again.");
+      }
       return rejectWithValue(error.response?.data?.message || "Login failed");
     }
   }
@@ -83,6 +91,23 @@ export const logout = createAsyncThunk<null, void>(
       return null;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || "Logout failed");
+    }
+  }
+);
+export const verifyToken = createAsyncThunk<AuthResponse, void>(
+  "auth/verifyToken",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await authAPI.verifyToken();
+      return response.data;
+    } catch (error: any) {
+      // If verification fails (server down or token invalid), clear localStorage
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      if (!error.response) {
+        return rejectWithValue("Server is not responding");
+      }
+      return rejectWithValue(error.response?.data?.message || "Token verification failed");
     }
   }
 );
@@ -220,6 +245,26 @@ const authSlice = createSlice({
         state.loading = false;
         state.error = (action.payload as string) || "Logout failed";
       });
+
+      // Verify Token
+      builder
+        .addCase(verifyToken.pending, (state) => {
+          state.loading = true;
+          state.error = null;
+        })
+        .addCase(verifyToken.fulfilled, (state, action) => {
+          state.loading = false;
+          state.user = action.payload.data;
+          state.token = action.payload.token;
+          state.isAuthenticated = true;
+        })
+        .addCase(verifyToken.rejected, (state, action) => {
+          state.loading = false;
+          state.error = (action.payload as string) || "Token verification failed";
+          state.isAuthenticated = false;
+          state.user = null;
+          state.token = null;
+        });
   },
 });
 

@@ -1,6 +1,6 @@
 import axios, { AxiosInstance } from "axios";
 
-const API_BASE_URL: string = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+const API_BASE_URL: string = (import.meta.env as any).VITE_API_URL || "http://localhost:5000/api";
 
 const apiClient: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
@@ -50,6 +50,9 @@ export const authAPI = {
   
   logout: () =>
     apiClient.post("/auth/logout"),
+
+  verifyToken: () =>
+    apiClient.get("/auth/verify"),
 };
 
 export default apiClient;

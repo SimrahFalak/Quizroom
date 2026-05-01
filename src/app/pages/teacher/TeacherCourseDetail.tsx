@@ -10,7 +10,6 @@ import {
   fetchCourseDetails,
   fetchCourseQuizzes,
   fetchCourseEnrolledStudents,
-  fetchCourseSubmissions,
 } from '../../store/courseDetailSlice';
 import type { AppDispatch, RootState } from '../../store/store';
 
@@ -19,9 +18,9 @@ export default function TeacherCourseDetail() {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch<AppDispatch>();
-  const [activeTab, setActiveTab] = useState<'quizzes' | 'students' | 'submissions'>('quizzes');
+  const [activeTab, setActiveTab] = useState<'quizzes' | 'students'>('quizzes');
 
-  const { courseDetails, quizzes, students, submissions, loading, error } = useSelector(
+  const { courseDetails, quizzes, students, loading, error } = useSelector(
     (state: RootState) => state.courseDetail
   );
   const { user } = useSelector((state: RootState) => state.auth);
@@ -31,7 +30,6 @@ export default function TeacherCourseDetail() {
       dispatch(fetchCourseDetails({ teacherId: user.id, courseId }));
       dispatch(fetchCourseQuizzes({ teacherId: user.id, courseId }));
       dispatch(fetchCourseEnrolledStudents({ teacherId: user.id, courseId }));
-      dispatch(fetchCourseSubmissions({ teacherId: user.id, courseId }));
     }
   }, [courseId, user?.id, dispatch]);
 
@@ -83,7 +81,7 @@ export default function TeacherCourseDetail() {
 
           {/* Tabs */}
           <div className="flex gap-2 bg-white p-2 rounded-xl shadow-sm overflow-x-auto">
-            {(['quizzes', 'students', 'submissions'] as const).map((tab) => (
+            {(['quizzes', 'students'] as const).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -238,68 +236,7 @@ export default function TeacherCourseDetail() {
             </div>
           )}
 
-          {/* Submissions Tab */}
-          {activeTab === 'submissions' && (
-            <Card>
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-gray-800">Quiz Submissions ({submissions.length})</h2>
-              </div>
 
-              {loading && activeTab === 'submissions' ? (
-                <LoadingSkeleton />
-              ) : submissions.length === 0 ? (
-                <div className="p-8 text-center">
-                  <p className="text-gray-500">No submissions yet</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {submissions.map((submission) => (
-                    <div
-                      key={submission._id}
-                      className="p-6 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <h3 className="font-bold text-lg text-gray-800 mb-1">
-                            {submission.student.name}
-                          </h3>
-                          <p className="text-sm text-gray-500">{submission.quiz.title}</p>
-                        </div>
-
-                        <div className="flex items-center gap-8">
-                          <div className="text-center">
-                            <div className="text-2xl font-bold text-gray-800">
-                              {submission.isGraded 
-                                ? `${submission.obtainedMarks}/${submission.quiz.totalMarks}`
-                                : '-'
-                              }
-                            </div>
-                            <div className="text-xs text-gray-500">
-                              {new Date(submission.createdAt).toLocaleDateString()}
-                            </div>
-                          </div>
-
-                          <span
-                            className={`px-4 py-2 rounded-full font-semibold text-sm whitespace-nowrap ${
-                              submission.isGraded
-                                ? 'bg-green-100 text-green-700'
-                                : 'bg-yellow-100 text-yellow-700'
-                            }`}
-                          >
-                            {submission.isGraded ? 'Graded' : 'Pending'}
-                          </span>
-
-                          <button className="px-6 py-3 bg-gradient-to-r from-[#6C4EFF] to-[#9A7BFF] text-white rounded-xl font-semibold hover:shadow-lg transition-all whitespace-nowrap">
-                            {submission.isGraded ? 'View' : 'Grade'}
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </Card>
-          )}
         </>
       )}
     </div>

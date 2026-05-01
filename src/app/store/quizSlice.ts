@@ -164,6 +164,50 @@ export const fetchStudentAttempts = createAsyncThunk(
   }
 );
 
+export const fetchQuizAttempts = createAsyncThunk(
+  "quiz/fetchQuizAttempts",
+  async (
+    { teacherId, quizId }: { teacherId: string; quizId: string },
+    { rejectWithValue }
+  ) => {
+    try {
+      const data = await quizAPI.getQuizAttempts(teacherId, quizId);
+      return data;
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to fetch attempts"
+      );
+    }
+  }
+);
+
+export const saveQuizAttemptReview = createAsyncThunk(
+  "quiz/saveQuizAttemptReview",
+  async (
+    {
+      teacherId,
+      quizId,
+      attemptId,
+      responses,
+    }: {
+      teacherId: string;
+      quizId: string;
+      attemptId: string;
+      responses: Array<{ questionId: string; obtainedPoints?: number; remarks?: string }>;
+    },
+    { rejectWithValue }
+  ) => {
+    try {
+      const data = await quizAPI.updateQuizAttemptReview(teacherId, quizId, attemptId, responses);
+      return data;
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to save graded attempt"
+      );
+    }
+  }
+);
+
 const quizSlice = createSlice({
   name: "quiz",
   initialState,
@@ -298,6 +342,40 @@ const quizSlice = createSlice({
         state.attempts = action.payload;
       })
       .addCase(fetchStudentAttempts.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      });
+
+    // Fetch Quiz Attempts (Teacher)
+    builder
+      .addCase(fetchQuizAttempts.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchQuizAttempts.fulfilled, (state, action) => {
+        state.loading = false;
+        state.attempts = action.payload;
+      })
+      .addCase(fetchQuizAttempts.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      });
+
+    // Save Quiz Attempt Review
+    builder
+      .addCase(saveQuizAttemptReview.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(saveQuizAttemptReview.fulfilled, (state, action) => {
+        state.loading = false;
+        state.success = true;
+        state.message = "Attempt graded successfully";
+        state.attempts = state.attempts.map((attempt) =>
+          String(attempt._id) === String(action.payload._id) ? action.payload : attempt
+        );
+      })
+      .addCase(saveQuizAttemptReview.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });

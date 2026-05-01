@@ -12,9 +12,15 @@ export const questionTypeMap: Record<string, string> = {
   FILE_UPLOAD: "File Upload",
   NUMERIC: "Numeric",
   mcq: "Multiple Choice (Single)",
+  multiple: "Multiple Choice (Multiple)",
+  truefalse: "True/False",
   true_false: "True/False",
+  short: "Short Answer",
   short_answer: "Short Answer",
+  long: "Long Answer",
   long_answer: "Long Answer",
+  file: "File Upload",
+  numeric: "Numeric",
 };
 
 // Question interface
@@ -68,7 +74,7 @@ const quizAPI = {
   createQuiz: async (teacherId: string, courseId: string, payload: CreateQuizPayload) => {
     const response = await axios.post(`${API_URL}/teachers/${teacherId}/quizzes`, {
       ...payload,
-      course: courseId,
+      courseId,
     });
     return response.data.data;
   },
@@ -105,6 +111,19 @@ const quizAPI = {
 
   getQuizAttempts: async (teacherId: string, quizId: string) => {
     const response = await axios.get(`${API_URL}/teachers/${teacherId}/quizzes/${quizId}/attempts`);
+    return response.data.data;
+  },
+
+  updateQuizAttemptReview: async (
+    teacherId: string,
+    quizId: string,
+    attemptId: string,
+    responses: Array<{ questionId: string; obtainedPoints?: number; remarks?: string }>
+  ) => {
+    const response = await axios.patch(
+      `${API_URL}/teachers/${teacherId}/quizzes/${quizId}/attempts/${attemptId}`,
+      { responses }
+    );
     return response.data.data;
   },
 
