@@ -1,66 +1,39 @@
-import { Bell, Check, Trash2, Mail, Calendar, Award } from 'lucide-react';
+import { Bell, Check, Trash2 } from 'lucide-react';
 import { Card } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
+import { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState, AppDispatch } from '../../store/store';
+import {
+  fetchStudentNotifications,
+  markNotificationAsRead,
+  markAllNotificationsRead,
+  deleteNotification,
+} from '../../store/notificationsSlice';
 
 export default function StudentNotifications() {
-  const notifications = [
-    {
-      id: 1,
-      type: 'quiz',
-      icon: Calendar,
-      title: 'New Quiz Available',
-      message: 'Web Development Quiz 6 has been published',
-      time: '2 hours ago',
-      read: false,
-      color: '#6C4EFF',
-    },
-    {
-      id: 2,
-      type: 'result',
-      icon: Award,
-      title: 'Results Published',
-      message: 'Your results for Data Science Mid-term are now available',
-      time: '5 hours ago',
-      read: false,
-      color: '#00D084',
-    },
-    {
-      id: 3,
-      type: 'reminder',
-      icon: Bell,
-      title: 'Quiz Deadline Reminder',
-      message: 'Mobile Development Quiz 3 is due in 2 days',
-      time: '1 day ago',
-      read: true,
-      color: '#FFA500',
-    },
-    {
-      id: 4,
-      type: 'announcement',
-      icon: Mail,
-      title: 'Course Announcement',
-      message: 'New learning materials added to Graphic Design course',
-      time: '2 days ago',
-      read: true,
-      color: '#FF6B9D',
-    },
-    {
-      id: 5,
-      type: 'quiz',
-      icon: Calendar,
-      title: 'Quiz Rescheduled',
-      message: 'Data Science Quiz 8 has been rescheduled to March 25',
-      time: '3 days ago',
-      read: true,
-      color: '#6C4EFF',
-    },
-  ];
+  const dispatch = useDispatch<AppDispatch>();
+  const { student } = useSelector((state: RootState) => state.profile);
+  const { items: notifications } = useSelector((state: RootState) => state.notifications);
 
-  const unreadCount = notifications.filter(n => !n.read).length;
+  useEffect(() => {
+    if (student?.id || student?._id) {
+      const id = student.id || student._id;
+      dispatch(fetchStudentNotifications(String(id)));
+    }
+  }, [dispatch, student]);
+
+  const unreadCount = notifications.filter((n) => !n.read).length;
+
+  const handleMarkAll = () => {
+    const id = student?.id || student?._id;
+    if (id) {
+      dispatch(markAllNotificationsRead({ recipientType: 'Student', recipientId: String(id) }));
+    }
+  };
 
   return (
-    <div className="space-y-8">
-      {/* Header */}
+    <div className="space-y-8 min-h-screen">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-800 mb-2">Notifications</h1>
@@ -69,43 +42,32 @@ export default function StudentNotifications() {
           </p>
         </div>
         <div className="flex gap-3">
-          <Button variant="outline" className="flex items-center gap-2">
+          <Button onClick={handleMarkAll} variant="outline" className="flex items-center gap-2">
             <Check className="w-5 h-5" />
             Mark All as Read
-          </Button>
-          <Button variant="ghost" className="flex items-center gap-2">
-            <Trash2 className="w-5 h-5" />
-            Clear All
           </Button>
         </div>
       </div>
 
-    
-      {/* Notifications List */}
       <div className="space-y-4">
         {notifications.map((notification) => {
-          const Icon = notification.icon;
+          const Icon = Bell; // generic icon for now
           return (
             <Card
-              key={notification.id}
+              key={notification._id}
               className={`hover:shadow-xl transition-all cursor-pointer ${
                 !notification.read ? 'border-2 border-[#6C4EFF]' : ''
               }`}
             >
               <div className="flex items-start gap-4">
-                {/* Icon */}
-                <div
-                  className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0"
-                  style={{ backgroundColor: `${notification.color}20` }}
-                >
-                  <Icon className="w-7 h-7" style={{ color: notification.color }} />
+                <div className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#6C4EFF20' }}>
+                  <Icon className="w-7 h-7" style={{ color: '#6C4EFF' }} />
                 </div>
 
-                {/* Content */}
                 <div className="flex-1">
                   <div className="flex items-start justify-between mb-2">
                     <div>
-                      <h3 className="font-bold text-lg text-gray-800">{notification.title}</h3>
+                      <h3 className="font-bold text-lg text-gray-800">{notification.eventType}</h3>
                       <p className="text-gray-600 mt-1">{notification.message}</p>
                     </div>
                     {!notification.read && (
@@ -113,14 +75,20 @@ export default function StudentNotifications() {
                     )}
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-500">{notification.time}</span>
+                    <span className="text-sm text-gray-500">{new Date(notification.createdAt || '').toLocaleString()}</span>
                     <div className="flex gap-2">
                       {!notification.read && (
-                        <button className="text-sm text-[#6C4EFF] hover:underline font-medium">
+                        <button
+                          onClick={() => dispatch(markNotificationAsRead({ notificationId: notification._id, recipientId: String(student?.id || student?._id) }))}
+                          className="text-sm text-[#6C4EFF] hover:underline font-medium"
+                        >
                           Mark as Read
                         </button>
                       )}
-                      <button className="text-sm text-red-500 hover:underline font-medium">
+                      <button
+                        onClick={() => dispatch(deleteNotification({ notificationId: notification._id, recipientId: String(student?.id || student?._id) }))}
+                        className="text-sm text-red-500 hover:underline font-medium"
+                      >
                         Delete
                       </button>
                     </div>
@@ -132,7 +100,6 @@ export default function StudentNotifications() {
         })}
       </div>
 
-      {/* Empty State (if no notifications) */}
       {notifications.length === 0 && (
         <Card className="text-center py-16">
           <Bell className="w-20 h-20 text-gray-300 mx-auto mb-4" />

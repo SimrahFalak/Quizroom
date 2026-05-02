@@ -1,53 +1,89 @@
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router';
+import { useDispatch, useSelector } from 'react-redux';
 import { BookOpen, FileQuestion, Trophy, TrendingUp } from 'lucide-react';
 import WelcomeBanner from '../../components/dashboard/WelcomeBanner';
 import StatCard from '../../components/dashboard/StatCard';
 import CourseCard from '../../components/dashboard/CourseCard';
 import { Card } from '../../components/ui/card';
-import ProgressBar from '../../components/ui/ProgressBar';
 import Calendar from '../../components/dashboard/Calendar';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { getStudentCourses } from '../../store/courseSlice';
+import { fetchStudentAttempts, fetchStudentQuizzes } from '../../store/quizSlice';
+import type { AppDispatch, RootState } from '../../store/store';
 
 export default function StudentDashboard() {
+  const navigate = useNavigate();
+  const dispatch = useDispatch<AppDispatch>();
+  const { user } = useSelector((state: RootState) => state.auth);
+  const { courses } = useSelector((state: RootState) => state.course);
+  const { quizzes, attempts } = useSelector((state: RootState) => state.quiz);
+
+  useEffect(() => {
+    if (user?.id) {
+      dispatch(getStudentCourses(user.id));
+      dispatch(fetchStudentQuizzes({ studentId: user.id }));
+      dispatch(fetchStudentAttempts(user.id));
+    }
+  }, [dispatch, user?.id]);
+
+  const now = new Date();
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
+
+  const attemptedQuizIds = new Set(
+    attempts.map((attempt: any) => String(attempt.quiz?._id || attempt.quiz))
+  );
+
+  const upcomingQuizzes = quizzes
+    .filter((quiz: any) => Boolean(quiz.deadline))
+    .filter((quiz: any) => new Date(quiz.deadline) >= now)
+    .filter((quiz: any) => !attemptedQuizIds.has(String(quiz._id || quiz)))
+    .sort((a: any, b: any) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime());
+
+  const nearestQuiz = upcomingQuizzes[0];
+  const nearestQuizDate = nearestQuiz?.deadline ? new Date(nearestQuiz.deadline) : null;
+
+  const totalQuizzes = quizzes.length > 0 ? quizzes.length : attemptedQuizIds.size;
+
+  const averageScore =
+    attempts.length > 0
+      ? Math.round(
+          attempts.reduce((sum: number, attempt: any) => sum + Number(attempt.percentage || 0), 0) /
+            attempts.length
+        )
+      : 0;
+
   const stats = [
-    { title: 'Total Courses', value: '8', icon: BookOpen, color: '#6C4EFF' },
-    { title: 'Total Quizzes', value: '24', icon: FileQuestion, color: '#FFA500' },
-    { title: 'Quizzes Completed', value: '12', icon: TrendingUp, color: '#FF6B9D' },
-    { title: 'Average Score', value: '85%', icon: Trophy, color: '#00D084', },
+    { title: 'Total Courses', value: courses.length, icon: BookOpen, color: '#6C4EFF' },
+    { title: 'Total Quizzes', value: totalQuizzes, icon: FileQuestion, color: '#FFA500' },
+    { title: 'Quizzes Completed', value: attempts.length, icon: TrendingUp, color: '#FF6B9D' },
+    { title: 'Average Score', value: `${averageScore}%`, icon: Trophy, color: '#00D084' },
   ];
 
-  const courses = [
-    { title: 'Web development', instructor: 'Yerbolat Yerkebulan', rating: 5 },
-     { title: 'Data science', instructor: 'Manarbek Adilet', rating: 5 },
-     { title: 'Graphic Design', instructor: 'Ashley Akhmetov', rating: 4 },
-      { title: 'UI/UX Design', instructor: 'Ashley Akhmetov', rating: 4 },
+  const dashboardCourses = courses.slice(0, 4).map((course: any) => ({
+    courseId: course._id,
+    title: course.title,
+    instructor: course.teacher?.name ? `by ${course.teacher.name}` : 'by Instructor',
+    rating: 5,
+  }));
 
-  ];
-
-  const quizResults = [
-    { name: 'Quiz 1', subject: 'Web development', score: 74.5, color: '#6C4EFF' },
-    { name: 'Quiz 2', subject: 'Data science', score: 54.0, color: '#FFA500' },
-    { name: 'Quiz 5', subject: 'Mobile development', score: 25.0, color: '#FF6B6B' },
-    { name: 'Quiz 1', subject: 'Networks and security', score: 67.0, color: '#6C4EFF' },
-  ];
-
-  const performanceData = [
-    { week: 'Q1', score: 60 },
-    { week: 'Q2', score: 45 },
-    { week: 'Q3', score: 70 },
-    { week: 'Q4', score: 55 },
-    { week: 'Q5', score: 85 },
-  ];
+  const quizDaySet = new Set(
+    quizzes
+      .filter((quiz: any) => Boolean(quiz.deadline))
+      .map((quiz: any) => new Date(quiz.deadline))
+      .filter((date: Date) => date.getMonth() === currentMonth && date.getFullYear() === currentYear)
+      .map((date: Date) => date.getDate())
+  );
 
   const calendarDates = [
-    { date: 15, type: 'today' as const },
-    { date: 25, type: 'quiz' as const },
-    { date: 31, type: 'quiz' as const },
+    { date: now.getDate(), type: 'today' as const },
+    ...Array.from(quizDaySet).map((day) => ({ date: day, type: 'quiz' as const })),
   ];
 
   return (
     <div className="space-y-8">
       {/* Welcome Banner */}
-      <WelcomeBanner userName="Simrah" role="student" />
+      <WelcomeBanner userName={user?.name || 'Student'} role="student" />
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -63,17 +99,33 @@ export default function StudentDashboard() {
   {/* Next Quiz Deadline */}
           <Card className="bg-gradient-to-r from-pink-50 to-purple-50 py-3">
             <div className="flex items-center justify-between">
-              <div>
-                <div className="text-5xl font-bold text-[#FF6B9D] mb-2">25</div>
-                <div className="text-sm text-gray-600">of January</div>
-              </div>
-              <div className="flex-1 ml-8">
-                <h3 className="text-xl font-bold text-gray-800 mb-1">Next quiz deadline</h3>
-                <p className="text-gray-600">Introduction to Computer Science</p>
-              </div>
-              <button className="px-6 py-3 bg-[#FF6B9D] text-white rounded-xl font-semibold hover:shadow-lg transition-all">
-                Start
-              </button>
+              {nearestQuiz && nearestQuizDate ? (
+                <>
+                  <div>
+                    <div className="text-5xl font-bold text-[#FF6B9D] mb-2">
+                      {nearestQuizDate.getDate()}
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      of {nearestQuizDate.toLocaleString('default', { month: 'long' })}
+                    </div>
+                  </div>
+                  <div className="flex-1 ml-8">
+                    <h3 className="text-xl font-bold text-gray-800 mb-1">Next quiz deadline</h3>
+                    <p className="text-gray-600">{nearestQuiz.title}</p>
+                  </div>
+                  <button
+                    onClick={() => navigate(`/student/quiz/${nearestQuiz._id}`)}
+                    className="px-6 py-3 bg-[#FF6B9D] text-white rounded-xl font-semibold hover:shadow-lg transition-all"
+                  >
+                    Attempt Quiz
+                  </button>
+                </>
+              ) : (
+                <div>
+                  <h3 className="text-xl font-bold text-gray-800 mb-1">Next quiz deadline</h3>
+                  <p className="text-gray-600">No upcoming quizzes yet.</p>
+                </div>
+              )}
             </div>
           </Card>
 
@@ -86,7 +138,7 @@ export default function StudentDashboard() {
               </button>
             </div>
             <div className="grid md:grid-cols-2 gap-6">
-              {courses.map((course, index) => (
+              {dashboardCourses.map((course, index) => (
                 <CourseCard key={index} {...course} />
               ))}
             </div>

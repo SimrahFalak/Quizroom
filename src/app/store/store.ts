@@ -4,6 +4,7 @@ import profileReducer from "./profileSlice.js";
 import courseReducer from "./courseSlice.js";
 import courseDetailReducer from "./courseDetailSlice.js";
 import quizReducer from "./quizSlice.js";
+import notificationsReducer from "./notificationsSlice";
 
 export const store = configureStore({
   reducer: {
@@ -12,6 +13,7 @@ export const store = configureStore({
     course: courseReducer,
     courseDetail: courseDetailReducer,
     quiz: quizReducer,
+    notifications: notificationsReducer,
   },
 });
 

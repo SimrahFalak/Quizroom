@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, Filter, BookOpen, Plus } from 'lucide-react';
+import { BookOpen, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { useDispatch, useSelector } from 'react-redux';
 import { Card } from '../../components/ui/card';
@@ -17,12 +17,14 @@ import {
 import { Input } from '../../components/ui/input';
 import { AppDispatch, RootState } from '../../store/store';
 import { joinCourse, getStudentCourses, clearSuccess } from '../../store/courseSlice';
+import { fetchStudentQuizzes, fetchStudentAttempts } from '../../store/quizSlice';
 
 interface CourseDisplay {
   _id: string;
   title: string;
   instructor: string;
   nextQuiz: string;
+  nextQuizId?: string;
   teacher?: any;
 }
 
@@ -36,6 +38,7 @@ export default function StudentCourses() {
   const { courses, loading, success, error, message } = useSelector(
     (state: RootState) => state.course
   );
+  const { quizzes, attempts } = useSelector((state: RootState) => state.quiz);
   const { user } = useSelector((state: RootState) => state.auth);
 
   // Mock courses - replace with Redux courses later
@@ -66,18 +69,43 @@ export default function StudentCourses() {
     },
   ];
 
-  // Transform API courses to display format
-  const transformedCourses: CourseDisplay[] = courses.map((course) => ({
-    _id: course._id,
-    title: course.title,
-    instructor: course.instructor || (course.teacher?.name || 'Instructor'),
-    nextQuiz: course.nextQuiz || 'TBD',
-    teacher: course.teacher,
-  }));
+  const now = new Date();
+
+  // Transform API courses to display format with nearest upcoming quiz per course
+  const transformedCourses: CourseDisplay[] = courses.map((course) => {
+    const courseId = String(course._id);
+    const attemptedQuizIds = new Set(
+      (attempts || []).map((attempt: any) => String(attempt.quiz?._id || attempt.quiz))
+    );
+
+    const courseQuizzes = quizzes
+      .filter((quiz: any) => {
+        const quizCourseId = typeof quiz.course === 'string' ? quiz.course : quiz.course?._id;
+        return String(quizCourseId) === courseId;
+      })
+      .filter((quiz: any) => Boolean(quiz.deadline))
+      .filter((quiz: any) => new Date(quiz.deadline) >= now)
+      .filter((quiz: any) => !attemptedQuizIds.has(String(quiz._id || quiz)))
+      .sort((a: any, b: any) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime());
+
+    const nearestQuiz = courseQuizzes[0];
+
+    return {
+      _id: course._id,
+      title: course.title,
+      instructor: course.instructor || (course.teacher?.name || 'Instructor'),
+      nextQuiz: nearestQuiz?.deadline
+        ? new Date(nearestQuiz.deadline).toLocaleString()
+        : '',
+      nextQuizId: nearestQuiz?._id,
+      teacher: course.teacher,
+    };
+  });
 
   useEffect(() => {
     if (user?.id) {
       dispatch(getStudentCourses(user.id));
+      dispatch(fetchStudentQuizzes({ studentId: user.id }));
     }
   }, [dispatch, user?.id]);
 
@@ -261,16 +289,26 @@ export default function StudentCourses() {
               {/* Info Grid */}
               <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-100">
                 <div>
-                  <p className="text-xs text-gray-500 mb-1">Next Quiz</p>
-                  <p className="text-sm font-semibold text-gray-800">{course.nextQuiz}</p>
+                  {course.nextQuiz ? (
+                    <>
+                      <p className="text-xs text-gray-500 mb-1">Next Quiz</p>
+                      <p className="text-sm font-semibold text-gray-800">{course.nextQuiz}</p>
+                    </>
+                  ) : null}
                 </div>
                 <div className="text-right">
-                  <button
-                    className="px-4 py-2 rounded-lg font-medium text-white text-sm hover:shadow-lg transition-all"
-                    style={{ backgroundColor: COURSE_COLOR }}
-                  >
-                    Continue
-                  </button>
+                  {course.nextQuizId ? (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/student/quiz/${course.nextQuizId}`);
+                      }}
+                      className="px-4 py-2 rounded-lg font-medium text-white text-sm hover:shadow-lg transition-all"
+                      style={{ backgroundColor: COURSE_COLOR }}
+                    >
+                      Attempt Quiz
+                    </button>
+                  ) : null}
                 </div>
               </div>
             </div>
