@@ -4,12 +4,11 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import StudentDashboard from "./pages/student/StudentDashboard";
 import StudentCourses from "./pages/student/StudentCourses";
-import StudentQuizzes from "./pages/student/StudentQuizzes";
-import StudentResults from "./pages/student/StudentResults";
 import StudentNotifications from "./pages/student/StudentNotifications";
 import StudentSettings from "./pages/student/StudentSettings";
 import QuizAttempt from "./pages/student/QuizAttempt";
 import CourseDetail from "./pages/student/CourseDetail";
+import StudentResultDetail from "./pages/student/StudentResultDetail";
 import TeacherDashboard from "./pages/teacher/TeacherDashboard";
 import TeacherCourses from "./pages/teacher/TeacherCourses";
 import TeacherCourseDetail from "./pages/teacher/TeacherCourseDetail";
@@ -40,8 +39,7 @@ export const router = createBrowserRouter([
       { index: true, Component: StudentDashboard },
       { path: "courses", Component: StudentCourses },
       { path: "course/:courseId", Component: CourseDetail },
-      { path: "quizzes", Component: StudentQuizzes },
-      { path: "results", Component: StudentResults },
+      { path: "results/:attemptId", Component: StudentResultDetail },
       { path: "notifications", Component: StudentNotifications },
       { path: "settings", Component: StudentSettings },
       { path: "quiz/:id", Component: QuizAttempt },

@@ -6,6 +6,7 @@ import { Card } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import ProgressBar from '../../components/ui/ProgressBar';
 import { fetchStudentQuizzes, fetchStudentAttempts } from '../../store/quizSlice';
+import { getStudentCourses } from '../../store/courseSlice';
 import type { AppDispatch, RootState } from '../../store/store';
 
 export default function CourseDetail() {
@@ -15,6 +16,7 @@ export default function CourseDetail() {
   const [activeTab, setActiveTab] = useState<'quizzes' | 'results'>('quizzes');
 
   const { quizzes, attempts, loading, error } = useSelector((state: RootState) => state.quiz);
+  const { courses: enrolledCourses } = useSelector((state: RootState) => state.course);
   const { user } = useSelector((state: RootState) => state.auth);
 
   // Fetch quizzes for the course
@@ -31,34 +33,58 @@ export default function CourseDetail() {
     }
   }, [dispatch, user?.id]);
 
-  // Mock course data
+  useEffect(() => {
+    if (user?.id) {
+      dispatch(getStudentCourses(user.id));
+    }
+  }, [dispatch, user?.id]);
+
+  const selectedCourse = enrolledCourses.find((course: any) => String(course._id) === String(courseId));
+
+  // Derive course information from enrolled course data first, then fall back to quizzes
+  const courseQuizzes = courseId
+    ? quizzes.filter((q: any) => String(q.course?._id || q.course) === String(courseId))
+    : quizzes;
+
+  const firstQuiz = courseQuizzes[0];
+  const courseRef = firstQuiz?.course as
+    | string
+    | { _id?: string; title?: string; name?: string; description?: string }
+    | undefined;
+  const teacherRef = firstQuiz?.teacher as
+    | string
+    | { _id?: string; name?: string }
+    | undefined;
+  const courseTitle = selectedCourse?.title || (typeof courseRef === 'string' ? 'Course' : courseRef?.title || courseRef?.name || 'Course');
+  const courseDescription = selectedCourse?.description || (typeof courseRef === 'string' ? '' : courseRef?.description || '');
+  const instructorName = selectedCourse?.teacher?.name || (typeof teacherRef === 'string' ? 'Instructor' : teacherRef?.name || 'Instructor');
+
   const courseData = {
-    id: parseInt(courseId || '1'),
-    title: 'Web Development',
-    instructor: 'Yerbolat Yerkebulan',
-    description: 'Learn modern web development with React, TypeScript, and Tailwind CSS',
+    id: parseInt(courseId || (typeof courseRef === 'string' ? courseRef : courseRef?._id || '1')),
+    title: courseTitle,
+    instructor: instructorName,
+    description: courseDescription,
   };
 
-  // Check if a quiz has been attempted
+  // Helper to check attempts for quizzes in this course
+  const courseQuizIds = new Set(courseQuizzes.map((q: any) => String(q._id)));
+
   const isQuizAttempted = (quizId: string) => {
-    return attempts.some((attempt: any) => attempt.quiz === quizId || attempt.quiz?._id === quizId);
+    return attempts.some((attempt: any) => {
+      const attQuizId = String(attempt.quiz?._id || attempt.quiz);
+      return attQuizId === String(quizId);
+    });
   };
 
   // Get attempt for a quiz
   const getQuizAttempt = (quizId: string) => {
-    return attempts.find((attempt: any) => attempt.quiz === quizId || attempt.quiz?._id === quizId);
+    return attempts.find((attempt: any) => String(attempt.quiz?._id || attempt.quiz) === String(quizId));
   };
-
-  // Calculate stats from real quizzes and attempts
-  const completedQuizzes = attempts.length;
-  const averageScore = attempts.length > 0 
-    ? Math.round(attempts.reduce((sum: number, att: any) => sum + (att.percentage || 0), 0) / attempts.length)
-    : 0;
 
   const courseStats = {
     totalQuizzes: quizzes.length,
-    completedQuizzes,
-    averageScore,
+    completedQuizzes: 0,
+    averageScore: 0,
   };
 
   const getStatusColor = (status: string) => {
@@ -70,29 +96,52 @@ export default function CourseDetail() {
     }
   };
 
-  // Mock results for this course
-  const courseResults = [
-    {
-      id: 1,
-      quizTitle: 'JavaScript Fundamentals',
-      score: 95,
-      totalMarks: 120,
-      percentage: 79,
-      passFail: 'Pass',
-      attemptDate: 'March 8, 2026',
-      feedback: 'Excellent work! Outstanding understanding of concepts.',
-    },
-    {
-      id: 2,
-      quizTitle: 'HTML & CSS Basics',
-      score: 72,
-      totalMarks: 80,
-      percentage: 90,
-      passFail: 'Pass',
-      attemptDate: 'March 10, 2026',
-      feedback: 'Good effort. Review CSS Grid and Flexbox.',
-    },
-  ];
+  // Build course results from student's attempts (filtered by course)
+  const courseResults = attempts
+    .filter((att: any) => {
+      // attempt.quiz may be an object or an id
+      const quizCourse = att.quiz?.course || att.quiz?.course?._id;
+      // If quiz.course is an object id or string, compare to courseId
+      if (!courseId) return false;
+      try {
+        return String(quizCourse) === String(courseId) || String(att.quiz?._id) === String(courseId);
+      } catch {
+        return false;
+      }
+    })
+    .map((att: any) => {
+      const feedback = (att.responses || [])
+        .map((r: any) => r.remarks)
+        .filter(Boolean)
+        .join('\n');
+
+      return {
+        id: att._id,
+        quizTitle: att.quiz?.title || 'Quiz',
+        score: att.score ?? 0,
+        totalMarks: att.maxScore ?? att.quiz?.totalMarks ?? 0,
+        percentage: Math.round(att.percentage ?? 0),
+        passFail: (att.percentage ?? 0) >= 50 ? 'Pass' : 'Fail',
+        attemptDate: att.createdAt ? new Date(att.createdAt).toLocaleDateString() : '',
+        feedback: feedback || 'No feedback provided yet.',
+        raw: att,
+      };
+    });
+
+  const reviewedCourseResults = courseResults.filter((result: any) => result.raw?.reviewedAt);
+
+  courseStats.completedQuizzes = new Set(
+    reviewedCourseResults.map((result: any) => String(result.raw?.quiz?._id || result.raw?.quiz))
+  ).size;
+
+  courseStats.averageScore = reviewedCourseResults.length > 0
+    ? Math.round(
+        reviewedCourseResults.reduce(
+          (sum: number, result: any) => sum + (result.percentage || 0),
+          0
+        ) / reviewedCourseResults.length
+      )
+    : 0;
 
   return (
     <div className="space-y-8 min-h-screen">

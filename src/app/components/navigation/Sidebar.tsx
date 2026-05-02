@@ -20,8 +20,6 @@ export default function Sidebar({ role }: SidebarProps) {
   const studentLinks = [
     { path: `/student`, label: 'Dashboard', icon: LayoutDashboard },
     { path: `/student/courses`, label: 'Courses', icon: BookOpen },
-    { path: `/student/quizzes`, label: 'Quizzes', icon: FileQuestion },
-    { path: `/student/results`, label: 'Results', icon: ClipboardCheck },
     { path: `/student/notifications`, label: 'Notifications', icon: Bell, hasUnread: true },
     { path: `/student/settings`, label: 'Settings', icon: Settings },
   ];
