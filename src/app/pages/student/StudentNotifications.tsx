@@ -1,7 +1,7 @@
-import { Bell, Check, Trash2 } from 'lucide-react';
+import { Bell, Check, Trash2, RefreshCw } from 'lucide-react';
 import { Card } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../../store/store';
 import {
@@ -13,23 +13,32 @@ import {
 
 export default function StudentNotifications() {
   const dispatch = useDispatch<AppDispatch>();
-  const { student } = useSelector((state: RootState) => state.profile);
-  const { items: notifications } = useSelector((state: RootState) => state.notifications);
+  const { user: student } = useSelector((state: RootState) => state.auth);
+  const { items: notifications, loading } = useSelector((state: RootState) => state.notifications);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
-    if (student?.id || student?._id) {
-      const id = student.id || student._id;
-      dispatch(fetchStudentNotifications(String(id)));
+    if (student?.id) {
+      console.log('[StudentNotifications] Component mounted/student changed, fetching notifications for:', student.id);
+      dispatch(fetchStudentNotifications(String(student.id)));
     }
   }, [dispatch, student]);
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   const handleMarkAll = () => {
-    const id = student?.id || student?._id;
-    if (id) {
-      dispatch(markAllNotificationsRead({ recipientType: 'Student', recipientId: String(id) }));
+    if (student?.id) {
+      dispatch(markAllNotificationsRead({ recipientType: 'Student', recipientId: String(student.id) }));
     }
+  };
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    if (student?.id) {
+      console.log('[StudentNotifications] Manual refresh triggered for:', student.id);
+      await dispatch(fetchStudentNotifications(String(student.id)));
+    }
+    setIsRefreshing(false);
   };
 
   return (
@@ -42,6 +51,15 @@ export default function StudentNotifications() {
           </p>
         </div>
         <div className="flex gap-3">
+          <Button 
+            onClick={handleRefresh} 
+            variant="outline" 
+            className="flex items-center gap-2"
+            disabled={isRefreshing}
+          >
+            <RefreshCw className={`w-5 h-5 ${isRefreshing ? 'animate-spin' : ''}`} />
+            {isRefreshing ? 'Refreshing...' : 'Refresh'}
+          </Button>
           <Button onClick={handleMarkAll} variant="outline" className="flex items-center gap-2">
             <Check className="w-5 h-5" />
             Mark All as Read
@@ -79,14 +97,14 @@ export default function StudentNotifications() {
                     <div className="flex gap-2">
                       {!notification.read && (
                         <button
-                          onClick={() => dispatch(markNotificationAsRead({ notificationId: notification._id, recipientId: String(student?.id || student?._id) }))}
+                        onClick={() => dispatch(markNotificationAsRead({ notificationId: notification._id, recipientId: String(student?.id) }))}
                           className="text-sm text-[#6C4EFF] hover:underline font-medium"
                         >
                           Mark as Read
                         </button>
                       )}
                       <button
-                        onClick={() => dispatch(deleteNotification({ notificationId: notification._id, recipientId: String(student?.id || student?._id) }))}
+                        onClick={() => dispatch(deleteNotification({ notificationId: notification._id, recipientId: String(student?.id) }))}
                         className="text-sm text-red-500 hover:underline font-medium"
                       >
                         Delete

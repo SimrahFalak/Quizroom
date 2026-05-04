@@ -1,7 +1,7 @@
-import { Check, FileQuestion } from 'lucide-react';
+import { Check, FileQuestion, RefreshCw } from 'lucide-react';
 import { Card } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../../store/store';
 import {
@@ -13,24 +13,36 @@ import {
 
 export default function TeacherNotifications() {
   const dispatch = useDispatch<AppDispatch>();
-  const { teacher } = useSelector((state: RootState) => state.profile);
-  const { items: notifications } = useSelector((state: RootState) => state.notifications);
+  const { user: teacher } = useSelector((state: RootState) => state.auth);
+  const { items: notifications, loading } = useSelector((state: RootState) => state.notifications);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   // announcement UI removed — notifications are generated automatically by events
 
   useEffect(() => {
-    if (teacher?.id || teacher?._id) {
-      const id = teacher.id || teacher._id;
-      dispatch(fetchTeacherNotifications(String(id)));
+    console.log('[TeacherNotifications] Effect triggered, teacher object:', teacher);
+    if (teacher?.id) {
+      console.log('[TeacherNotifications] Fetching notifications for teacher ID:', teacher.id, 'Type:', typeof teacher.id);
+      dispatch(fetchTeacherNotifications(String(teacher.id)));
+    } else {
+      console.warn('[TeacherNotifications] No teacher ID available. teacher =', teacher);
     }
   }, [dispatch, teacher]);
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   const handleMarkAll = () => {
-    const id = teacher?.id || teacher?._id;
-    if (id) {
-      dispatch(markAllNotificationsRead({ recipientType: 'Teacher', recipientId: String(id) }));
+    if (teacher?.id) {
+      dispatch(markAllNotificationsRead({ recipientType: 'Teacher', recipientId: String(teacher.id) }));
     }
+  };
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    if (teacher?.id) {
+      console.log('[TeacherNotifications] Manual refresh triggered for:', teacher.id);
+      await dispatch(fetchTeacherNotifications(String(teacher.id)));
+    }
+    setIsRefreshing(false);
   };
 
   return (
@@ -43,6 +55,15 @@ export default function TeacherNotifications() {
           </p>
         </div>
         <div className="flex gap-3">
+          <Button 
+            onClick={handleRefresh} 
+            variant="outline" 
+            className="flex items-center gap-2"
+            disabled={isRefreshing}
+          >
+            <RefreshCw className={`w-5 h-5 ${isRefreshing ? 'animate-spin' : ''}`} />
+            {isRefreshing ? 'Refreshing...' : 'Refresh'}
+          </Button>
           <Button onClick={handleMarkAll} variant="outline" className="flex items-center gap-2">
             <Check className="w-5 h-5" />
             Mark All as Read
@@ -83,14 +104,14 @@ export default function TeacherNotifications() {
                     <div className="flex gap-2">
                       {!notification.read && (
                         <button
-                          onClick={() => dispatch(markNotificationAsRead({ notificationId: notification._id, recipientId: String(teacher?.id || teacher?._id) }))}
+                        onClick={() => dispatch(markNotificationAsRead({ notificationId: notification._id, recipientId: String(teacher?.id) }))}
                           className="text-sm text-[#6C4EFF] hover:underline font-medium"
                         >
                           Mark as Read
                         </button>
                       )}
                       <button
-                        onClick={() => dispatch(deleteNotification({ notificationId: notification._id, recipientId: String(teacher?.id || teacher?._id) }))}
+                        onClick={() => dispatch(deleteNotification({ notificationId: notification._id, recipientId: String(teacher?.id) }))}
                         className="text-sm text-red-500 hover:underline font-medium"
                       >
                         Delete

@@ -40,9 +40,12 @@ export const fetchTeacherNotifications = createAsyncThunk(
   "notifications/fetchTeacher",
   async (teacherId: string, { rejectWithValue }) => {
     try {
+      console.log('[fetchTeacherNotifications] Thunk called with teacherId:', teacherId);
       const resp = await notificationAPI.getTeacherNotifications(teacherId);
+      console.log('[fetchTeacherNotifications] Thunk received response:', resp.data);
       return resp.data.data as NotificationItem[];
     } catch (err: any) {
+      console.error('[fetchTeacherNotifications] Error:', err);
       return rejectWithValue(err.response?.data?.message || err.message);
     }
   }
@@ -118,10 +121,12 @@ const slice = createSlice({
         state.loading = true;
       })
       .addCase(fetchTeacherNotifications.fulfilled, (state, action) => {
+        console.log('[notificationsSlice] Teacher notifications fulfilled:', action.payload);
         state.loading = false;
         state.items = action.payload;
       })
       .addCase(fetchTeacherNotifications.rejected, (state, action) => {
+        console.error('[notificationsSlice] Teacher notifications rejected:', action.payload);
         state.loading = false;
         state.error = action.payload as string;
       })
