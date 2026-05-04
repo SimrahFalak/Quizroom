@@ -43,7 +43,7 @@ export default function TeacherDashboard() {
   }, [dispatch, user?.id]);
 
   // Total students across all courses
-  const totalStudents = courses.reduce((sum: number, c: any) => sum + (c.students?.length || 0), 0);
+  const totalCourses = courses.length;
 
   // Quizzes created
   const quizzesCreated = quizzes.length;
@@ -58,7 +58,7 @@ export default function TeacherDashboard() {
   const pendingGrading = allAttempts.filter((a) => !a.reviewedAt).length;
 
   const stats = [
-    { title: 'Total Students', value: String(totalStudents), icon: Users, color: '#6C4EFF' },
+    { title: 'Total Courses', value: String(totalCourses), icon: Users, color: '#6C4EFF' },
     { title: 'Quizzes Created', value: String(quizzesCreated), icon: FileQuestion, color: '#FFA500' },
     { title: 'Average Score', value: `${averageScore}%`, icon: Award, color: '#00D084' },
     { title: 'Pending Grading', value: String(pendingGrading), icon: Clock, color: '#FF6B9D' },
@@ -124,10 +124,17 @@ export default function TeacherDashboard() {
         {/* Class Performance Chart */}
         <Card>
           <h2 className="text-xl font-bold text-gray-800 mb-6">Class Performance</h2>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={classPerformance}>
+          <ResponsiveContainer width="100%" height={350}>
+            <BarChart data={classPerformance} margin={{ bottom: 60, left: 0, right: 20, top: 20 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis dataKey="course" stroke="#888" />
+              <XAxis 
+                dataKey="course" 
+                stroke="#888"
+                angle={-45}
+                textAnchor="end"
+                height={100}
+                label={{ value: 'Courses', position: 'insideBottomRight', offset: -10 }}
+              />
               <YAxis stroke="#888" />
               <Tooltip />
               <Bar dataKey="average" fill="#6C4EFF" radius={[8, 8, 0, 0]} />

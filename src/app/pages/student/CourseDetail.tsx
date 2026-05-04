@@ -260,7 +260,7 @@ export default function CourseDetail() {
                         </div>
                         <div className="flex items-center gap-2 text-sm text-gray-600">
                           <FileQuestion className="w-4 h-4" />
-                          <span>{quiz.questionsCount || 0} questions</span>
+                          <span>{(quiz.questions?.length || 0)} questions</span>
                         </div>
                         <div className="flex items-center gap-2 text-sm text-gray-600">
                           <Calendar className="w-4 h-4" />

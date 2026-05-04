@@ -30,11 +30,39 @@ export default function StudentDashboard() {
   const currentMonth = now.getMonth();
   const currentYear = now.getFullYear();
 
+  const hasEnrolledCourses = courses.length > 0;
+  const studentCourseIds = new Set(courses.map((course: any) => String(course._id)));
+
+  // Keep only quizzes that belong to the student's enrolled courses.
+  const studentQuizzes = hasEnrolledCourses
+    ? quizzes.filter((quiz: any) => {
+        const courseId = String(quiz.courseId || quiz.course?._id || quiz.course || '');
+        return studentCourseIds.has(courseId);
+      })
+    : [];
+
+  const studentQuizIds = new Set(studentQuizzes.map((quiz: any) => String(quiz._id)));
+
+  // Keep only attempts for the student's enrolled-course quizzes.
+  const studentAttempts = hasEnrolledCourses
+    ? attempts.filter((attempt: any) => {
+        const attemptQuizId = String(attempt.quiz?._id || attempt.quiz || '');
+        if (studentQuizIds.has(attemptQuizId)) {
+          return true;
+        }
+
+        const attemptCourseId = String(
+          attempt.quiz?.course?._id || attempt.quiz?.course || ''
+        );
+        return studentCourseIds.has(attemptCourseId);
+      })
+    : [];
+
   const attemptedQuizIds = new Set(
-    attempts.map((attempt: any) => String(attempt.quiz?._id || attempt.quiz))
+    studentAttempts.map((attempt: any) => String(attempt.quiz?._id || attempt.quiz))
   );
 
-  const upcomingQuizzes = quizzes
+  const upcomingQuizzes = studentQuizzes
     .filter((quiz: any) => Boolean(quiz.deadline))
     .filter((quiz: any) => new Date(quiz.deadline) >= now)
     .filter((quiz: any) => !attemptedQuizIds.has(String(quiz._id || quiz)))
@@ -43,20 +71,20 @@ export default function StudentDashboard() {
   const nearestQuiz = upcomingQuizzes[0];
   const nearestQuizDate = nearestQuiz?.deadline ? new Date(nearestQuiz.deadline) : null;
 
-  const totalQuizzes = quizzes.length > 0 ? quizzes.length : attemptedQuizIds.size;
+  const totalQuizzes = studentQuizzes.length;
 
   const averageScore =
-    attempts.length > 0
+    studentAttempts.length > 0
       ? Math.round(
-          attempts.reduce((sum: number, attempt: any) => sum + Number(attempt.percentage || 0), 0) /
-            attempts.length
+          studentAttempts.reduce((sum: number, attempt: any) => sum + Number(attempt.percentage || 0), 0) /
+            studentAttempts.length
         )
       : 0;
 
   const stats = [
     { title: 'Total Courses', value: courses.length, icon: BookOpen, color: '#6C4EFF' },
     { title: 'Total Quizzes', value: totalQuizzes, icon: FileQuestion, color: '#FFA500' },
-    { title: 'Quizzes Completed', value: attempts.length, icon: TrendingUp, color: '#FF6B9D' },
+    { title: 'Quizzes Completed', value: studentAttempts.length, icon: TrendingUp, color: '#FF6B9D' },
     { title: 'Average Score', value: `${averageScore}%`, icon: Trophy, color: '#00D084' },
   ];
 
@@ -68,8 +96,9 @@ export default function StudentDashboard() {
   }));
 
   const quizDaySet = new Set(
-    quizzes
+    studentQuizzes
       .filter((quiz: any) => Boolean(quiz.deadline))
+      .filter((quiz: any) => !attemptedQuizIds.has(String(quiz._id || quiz)))
       .map((quiz: any) => new Date(quiz.deadline))
       .filter((date: Date) => date.getMonth() === currentMonth && date.getFullYear() === currentYear)
       .map((date: Date) => date.getDate())
