@@ -1,4 +1,6 @@
 import { Link, useLocation } from 'react-router';
+import { useSelector } from 'react-redux';
+import type { RootState } from '../../store/store';
 import { 
   LayoutDashboard, 
   BookOpen, 
@@ -20,8 +22,11 @@ export default function Sidebar({ role }: SidebarProps) {
   const studentLinks = [
     { path: `/student`, label: 'Dashboard', icon: LayoutDashboard },
     { path: `/student/courses`, label: 'Courses', icon: BookOpen },
+<<<<<<< HEAD
     { path: `/student/quizzes`, label: 'Quizzes', icon: FileQuestion },
     { path: `/student/results`, label: 'Results', icon: ClipboardCheck },
+=======
+>>>>>>> badd9b9c90de8df894cb70491e56df90f4d61d6a
     { path: `/student/notifications`, label: 'Notifications', icon: Bell, hasUnread: true },
     { path: `/student/settings`, label: 'Settings', icon: Settings },
   ];
@@ -35,6 +40,9 @@ export default function Sidebar({ role }: SidebarProps) {
   ];
 
   const links = role === 'student' ? studentLinks : teacherLinks;
+
+  const notifications = useSelector((state: RootState) => state.notifications.items);
+  const hasUnread = notifications.some((n) => !n.read);
 
   return (
     <div className="w-64 bg-white h-screen fixed left-0 top-0 shadow-lg p-6 flex flex-col">
@@ -69,7 +77,11 @@ export default function Sidebar({ role }: SidebarProps) {
             >
               <Icon className="w-5 h-5" />
               <span className="font-medium">{link.label}</span>
+<<<<<<< HEAD
               {link.hasUnread && (
+=======
+              {link.hasUnread && hasUnread && (
+>>>>>>> badd9b9c90de8df894cb70491e56df90f4d61d6a
                 <span className="ml-auto w-2.5 h-2.5 rounded-full bg-red-500 flex-shrink-0"></span>
               )}
             </Link>

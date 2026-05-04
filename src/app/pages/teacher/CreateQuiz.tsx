@@ -16,7 +16,10 @@ const questionTypeApiMap: Record<string, string> = {
   truefalse: 'TRUE_FALSE',
   short: 'SHORT_ANSWER',
   long: 'LONG_ANSWER',
+<<<<<<< HEAD
   file: 'FILE_UPLOAD',
+=======
+>>>>>>> badd9b9c90de8df894cb70491e56df90f4d61d6a
   numeric: 'NUMERIC',
 };
 
@@ -63,6 +66,10 @@ export default function CreateQuiz() {
     duration: '30',
     totalMarks: '100',
     deadline: '',
+<<<<<<< HEAD
+=======
+    negativeMarking: false,
+>>>>>>> badd9b9c90de8df894cb70491e56df90f4d61d6a
   });
 
   // Fetch teacher courses on mount
@@ -78,7 +85,6 @@ export default function CreateQuiz() {
     { value: 'truefalse', label: 'True / False' },
     { value: 'short', label: 'Short Answer' },
     { value: 'long', label: 'Long Answer' },
-    { value: 'file', label: 'File Upload' },
     { value: 'numeric', label: 'Numeric' },
   ];
 
@@ -147,6 +153,10 @@ export default function CreateQuiz() {
       durationMinutes: parseInt(quizDetails.duration) || 30,
       totalMarks: parseInt(quizDetails.totalMarks) || 100,
       deadline: quizDetails.deadline || undefined,
+<<<<<<< HEAD
+=======
+      negativeMarking: quizDetails.negativeMarking,
+>>>>>>> badd9b9c90de8df894cb70491e56df90f4d61d6a
       questions: transformedQuestions,
       isPublished: false,
     };
@@ -204,6 +214,10 @@ export default function CreateQuiz() {
       durationMinutes: parseInt(quizDetails.duration) || 30,
       totalMarks: parseInt(quizDetails.totalMarks) || 100,
       deadline: quizDetails.deadline || undefined,
+<<<<<<< HEAD
+=======
+      negativeMarking: quizDetails.negativeMarking,
+>>>>>>> badd9b9c90de8df894cb70491e56df90f4d61d6a
       questions: transformedQuestions,
       isPublished: true,
     };
@@ -375,6 +389,25 @@ export default function CreateQuiz() {
               />
             </div>
 
+<<<<<<< HEAD
+=======
+            <div className="flex items-center gap-3 p-4 ">
+              <input
+                type="checkbox"
+                id="negativeMarking"
+                checked={quizDetails.negativeMarking}
+                onChange={(e) =>
+                  setQuizDetails({ ...quizDetails, negativeMarking: e.target.checked })
+                }
+                className="w-5 h-5 rounded border-gray-300 text-[#6C4EFF] focus:ring-2 focus:ring-[#6C4EFF] cursor-pointer"
+              />
+              <label htmlFor="negativeMarking" className="flex-1 cursor-pointer">
+                <div className="font-medium text-gray-800">Enable Negative Marking</div>
+                <div className="text-sm text-gray-600">Wrong answers will deduct 25% of question marks</div>
+              </label>
+            </div>
+
+>>>>>>> badd9b9c90de8df894cb70491e56df90f4d61d6a
             <div className="flex justify-end">
               <Button
                 onClick={() => setStep(2)}

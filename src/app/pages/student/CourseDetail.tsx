@@ -6,6 +6,10 @@ import { Card } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import ProgressBar from '../../components/ui/ProgressBar';
 import { fetchStudentQuizzes, fetchStudentAttempts } from '../../store/quizSlice';
+<<<<<<< HEAD
+=======
+import { getStudentCourses } from '../../store/courseSlice';
+>>>>>>> badd9b9c90de8df894cb70491e56df90f4d61d6a
 import type { AppDispatch, RootState } from '../../store/store';
 
 export default function CourseDetail() {
@@ -15,6 +19,10 @@ export default function CourseDetail() {
   const [activeTab, setActiveTab] = useState<'quizzes' | 'results'>('quizzes');
 
   const { quizzes, attempts, loading, error } = useSelector((state: RootState) => state.quiz);
+<<<<<<< HEAD
+=======
+  const { courses: enrolledCourses } = useSelector((state: RootState) => state.course);
+>>>>>>> badd9b9c90de8df894cb70491e56df90f4d61d6a
   const { user } = useSelector((state: RootState) => state.auth);
 
   // Fetch quizzes for the course
@@ -31,6 +39,7 @@ export default function CourseDetail() {
     }
   }, [dispatch, user?.id]);
 
+<<<<<<< HEAD
   // Mock course data
   const courseData = {
     id: parseInt(courseId || '1'),
@@ -42,10 +51,54 @@ export default function CourseDetail() {
   // Check if a quiz has been attempted
   const isQuizAttempted = (quizId: string) => {
     return attempts.some((attempt: any) => attempt.quiz === quizId || attempt.quiz?._id === quizId);
+=======
+  useEffect(() => {
+    if (user?.id) {
+      dispatch(getStudentCourses(user.id));
+    }
+  }, [dispatch, user?.id]);
+
+  const selectedCourse = enrolledCourses.find((course: any) => String(course._id) === String(courseId));
+
+  // Derive course information from enrolled course data first, then fall back to quizzes
+  const courseQuizzes = courseId
+    ? quizzes.filter((q: any) => String(q.course?._id || q.course) === String(courseId))
+    : quizzes;
+
+  const firstQuiz = courseQuizzes[0];
+  const courseRef = firstQuiz?.course as
+    | string
+    | { _id?: string; title?: string; name?: string; description?: string }
+    | undefined;
+  const teacherRef = firstQuiz?.teacher as
+    | string
+    | { _id?: string; name?: string }
+    | undefined;
+  const courseTitle = selectedCourse?.title || (typeof courseRef === 'string' ? 'Course' : courseRef?.title || courseRef?.name || 'Course');
+  const courseDescription = selectedCourse?.description || (typeof courseRef === 'string' ? '' : courseRef?.description || '');
+  const instructorName = selectedCourse?.teacher?.name || (typeof teacherRef === 'string' ? 'Instructor' : teacherRef?.name || 'Instructor');
+
+  const courseData = {
+    id: parseInt(courseId || (typeof courseRef === 'string' ? courseRef : courseRef?._id || '1')),
+    title: courseTitle,
+    instructor: instructorName,
+    description: courseDescription,
+  };
+
+  // Helper to check attempts for quizzes in this course
+  const courseQuizIds = new Set(courseQuizzes.map((q: any) => String(q._id)));
+
+  const isQuizAttempted = (quizId: string) => {
+    return attempts.some((attempt: any) => {
+      const attQuizId = String(attempt.quiz?._id || attempt.quiz);
+      return attQuizId === String(quizId);
+    });
+>>>>>>> badd9b9c90de8df894cb70491e56df90f4d61d6a
   };
 
   // Get attempt for a quiz
   const getQuizAttempt = (quizId: string) => {
+<<<<<<< HEAD
     return attempts.find((attempt: any) => attempt.quiz === quizId || attempt.quiz?._id === quizId);
   };
 
@@ -59,6 +112,15 @@ export default function CourseDetail() {
     totalQuizzes: quizzes.length,
     completedQuizzes,
     averageScore,
+=======
+    return attempts.find((attempt: any) => String(attempt.quiz?._id || attempt.quiz) === String(quizId));
+  };
+
+  const courseStats = {
+    totalQuizzes: quizzes.length,
+    completedQuizzes: 0,
+    averageScore: 0,
+>>>>>>> badd9b9c90de8df894cb70491e56df90f4d61d6a
   };
 
   const getStatusColor = (status: string) => {
@@ -70,6 +132,7 @@ export default function CourseDetail() {
     }
   };
 
+<<<<<<< HEAD
   // Mock results for this course
   const courseResults = [
     {
@@ -93,6 +156,54 @@ export default function CourseDetail() {
       feedback: 'Good effort. Review CSS Grid and Flexbox.',
     },
   ];
+=======
+  // Build course results from student's attempts (filtered by course)
+  const courseResults = attempts
+    .filter((att: any) => {
+      // attempt.quiz may be an object or an id
+      const quizCourse = att.quiz?.course || att.quiz?.course?._id;
+      // If quiz.course is an object id or string, compare to courseId
+      if (!courseId) return false;
+      try {
+        return String(quizCourse) === String(courseId) || String(att.quiz?._id) === String(courseId);
+      } catch {
+        return false;
+      }
+    })
+    .map((att: any) => {
+      const feedback = (att.responses || [])
+        .map((r: any) => r.remarks)
+        .filter(Boolean)
+        .join('\n');
+
+      return {
+        id: att._id,
+        quizTitle: att.quiz?.title || 'Quiz',
+        score: att.score ?? 0,
+        totalMarks: att.maxScore ?? att.quiz?.totalMarks ?? 0,
+        percentage: Math.round(att.percentage ?? 0),
+        passFail: (att.percentage ?? 0) >= 50 ? 'Pass' : 'Fail',
+        attemptDate: att.createdAt ? new Date(att.createdAt).toLocaleDateString() : '',
+        feedback: feedback || 'No feedback provided yet.',
+        raw: att,
+      };
+    });
+
+  const reviewedCourseResults = courseResults.filter((result: any) => result.raw?.reviewedAt);
+
+  courseStats.completedQuizzes = new Set(
+    reviewedCourseResults.map((result: any) => String(result.raw?.quiz?._id || result.raw?.quiz))
+  ).size;
+
+  courseStats.averageScore = reviewedCourseResults.length > 0
+    ? Math.round(
+        reviewedCourseResults.reduce(
+          (sum: number, result: any) => sum + (result.percentage || 0),
+          0
+        ) / reviewedCourseResults.length
+      )
+    : 0;
+>>>>>>> badd9b9c90de8df894cb70491e56df90f4d61d6a
 
   return (
     <div className="space-y-8 min-h-screen">
@@ -211,7 +322,11 @@ export default function CourseDetail() {
                         </div>
                         <div className="flex items-center gap-2 text-sm text-gray-600">
                           <FileQuestion className="w-4 h-4" />
+<<<<<<< HEAD
                           <span>{quiz.questionsCount || 0} questions</span>
+=======
+                          <span>{(quiz.questions?.length || 0)} questions</span>
+>>>>>>> badd9b9c90de8df894cb70491e56df90f4d61d6a
                         </div>
                         <div className="flex items-center gap-2 text-sm text-gray-600">
                           <Calendar className="w-4 h-4" />

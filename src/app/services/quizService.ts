@@ -129,12 +129,20 @@ const quizAPI = {
 
   // Student endpoints
   getStudentQuizzes: async (studentId: string, courseId?: string) => {
+<<<<<<< HEAD
     let response;
     if (courseId) {
       response = await axios.get(`${API_URL}/students/${studentId}/courses/${courseId}/quizzes`);
     } else {
       response = await axios.get(`${API_URL}/students/${studentId}/quizzes`);
     }
+=======
+    // Note: studentId is kept in signature for compatibility with existing thunks.
+    // Backend endpoint for published quizzes is /students/quizzes with optional courseId query.
+    const response = await axios.get(`${API_URL}/students/quizzes`, {
+      params: courseId ? { courseId } : undefined,
+    });
+>>>>>>> badd9b9c90de8df894cb70491e56df90f4d61d6a
     return response.data.data;
   },
 

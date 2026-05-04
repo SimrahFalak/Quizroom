@@ -4,12 +4,14 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import StudentDashboard from "./pages/student/StudentDashboard";
 import StudentCourses from "./pages/student/StudentCourses";
-import StudentQuizzes from "./pages/student/StudentQuizzes";
-import StudentResults from "./pages/student/StudentResults";
 import StudentNotifications from "./pages/student/StudentNotifications";
 import StudentSettings from "./pages/student/StudentSettings";
 import QuizAttempt from "./pages/student/QuizAttempt";
 import CourseDetail from "./pages/student/CourseDetail";
+<<<<<<< HEAD
+=======
+import StudentResultDetail from "./pages/student/StudentResultDetail";
+>>>>>>> badd9b9c90de8df894cb70491e56df90f4d61d6a
 import TeacherDashboard from "./pages/teacher/TeacherDashboard";
 import TeacherCourses from "./pages/teacher/TeacherCourses";
 import TeacherCourseDetail from "./pages/teacher/TeacherCourseDetail";
@@ -40,8 +42,12 @@ export const router = createBrowserRouter([
       { index: true, Component: StudentDashboard },
       { path: "courses", Component: StudentCourses },
       { path: "course/:courseId", Component: CourseDetail },
+<<<<<<< HEAD
       { path: "quizzes", Component: StudentQuizzes },
       { path: "results", Component: StudentResults },
+=======
+      { path: "results/:attemptId", Component: StudentResultDetail },
+>>>>>>> badd9b9c90de8df894cb70491e56df90f4d61d6a
       { path: "notifications", Component: StudentNotifications },
       { path: "settings", Component: StudentSettings },
       { path: "quiz/:id", Component: QuizAttempt },

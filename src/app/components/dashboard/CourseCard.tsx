@@ -1,21 +1,38 @@
 import { BookOpen } from 'lucide-react';
+<<<<<<< HEAD
+=======
+import { useNavigate } from 'react-router';
+>>>>>>> badd9b9c90de8df894cb70491e56df90f4d61d6a
 import { Card } from '../ui/card';
 
 interface CourseCardProps {
+  courseId?: string;
   title: string;
   instructor: string;
   rating?: number;
 }
 
 export default function CourseCard({ 
+  courseId,
   title, 
   instructor, 
   rating = 5
 }: CourseCardProps) {
+<<<<<<< HEAD
   const COURSE_COLOR = '#6C4EFF';
 
   return (
     <Card className="relative overflow-hidden cursor-pointer transition-all hover:shadow-xl bg-white">
+=======
+  const navigate = useNavigate();
+  const COURSE_COLOR = '#6C4EFF';
+
+  return (
+    <Card
+      className="relative overflow-hidden cursor-pointer transition-all hover:shadow-xl bg-white"
+      onClick={() => courseId && navigate(`/student/course/${courseId}`)}
+    >
+>>>>>>> badd9b9c90de8df894cb70491e56df90f4d61d6a
       <div
         className="absolute top-0 left-0 right-0 h-1"
         style={{ backgroundColor: COURSE_COLOR }}
