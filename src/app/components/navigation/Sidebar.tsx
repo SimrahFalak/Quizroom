@@ -4,7 +4,6 @@ import {
   BookOpen, 
   FileQuestion, 
   ClipboardCheck, 
-  Users, 
   Bell, 
   Settings,
   GraduationCap,
@@ -23,7 +22,7 @@ export default function Sidebar({ role }: SidebarProps) {
     { path: `/student/courses`, label: 'Courses', icon: BookOpen },
     { path: `/student/quizzes`, label: 'Quizzes', icon: FileQuestion },
     { path: `/student/results`, label: 'Results', icon: ClipboardCheck },
-    { path: `/student/notifications`, label: 'Notifications', icon: Bell },
+    { path: `/student/notifications`, label: 'Notifications', icon: Bell, hasUnread: true },
     { path: `/student/settings`, label: 'Settings', icon: Settings },
   ];
 
@@ -31,8 +30,7 @@ export default function Sidebar({ role }: SidebarProps) {
     { path: `/teacher`, label: 'Dashboard', icon: LayoutDashboard },
     { path: `/teacher/courses`, label: 'Courses', icon: BookOpen },
     { path: `/teacher/create-quiz`, label: 'Create Quiz', icon: FileEdit },
-    { path: `/teacher/student-progress`, label: 'Students', icon: Users },
-    { path: `/teacher/notifications`, label: 'Notifications', icon: Bell },
+    { path: `/teacher/notifications`, label: 'Notifications', icon: Bell, hasUnread: true },
     { path: `/teacher/settings`, label: 'Settings', icon: Settings },
   ];
 
@@ -51,7 +49,12 @@ export default function Sidebar({ role }: SidebarProps) {
       {/* Navigation Links */}
       <nav className="flex-1 space-y-2">
         {links.map((link) => {
-          const isActive = location.pathname === link.path;
+          // Check if the current path matches the link path
+          // For "Courses" link, also highlight when viewing course details or creating quiz
+          const isActive = link.path === `/teacher/courses`
+            ? location.pathname.startsWith(`/teacher/course`)
+            : location.pathname === link.path;
+          
           const Icon = link.icon;
           
           return (
@@ -66,6 +69,9 @@ export default function Sidebar({ role }: SidebarProps) {
             >
               <Icon className="w-5 h-5" />
               <span className="font-medium">{link.label}</span>
+              {link.hasUnread && (
+                <span className="ml-auto w-2.5 h-2.5 rounded-full bg-red-500 flex-shrink-0"></span>
+              )}
             </Link>
           );
         })}
@@ -77,8 +83,7 @@ export default function Sidebar({ role }: SidebarProps) {
           <div className="w-full h-32 bg-gradient-to-br from-purple-100 to-blue-100 rounded-xl flex items-center justify-center mb-3">
             <GraduationCap className="w-16 h-16 text-[#6C4EFF] opacity-50" />
           </div>
-          <p className="text-sm font-semibold text-gray-700">Alpha education</p>
-          <p className="text-xs text-gray-500">platform</p>
+          
         </div>
       </div>
     </div>

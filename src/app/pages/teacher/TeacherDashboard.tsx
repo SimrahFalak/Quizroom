@@ -8,7 +8,7 @@ export default function TeacherDashboard() {
   const stats = [
     { title: 'Total Students', value: '245', icon: Users, color: '#6C4EFF' },
     { title: 'Quizzes Created', value: '42', icon: FileQuestion, color: '#FFA500' },
-    { title: 'Average Score', value: '78%', icon: Award, color: '#00D084', trend: '+3% this week' },
+    { title: 'Average Score', value: '78%', icon: Award, color: '#00D084' },
     { title: 'Pending Grading', value: '12', icon: Clock, color: '#FF6B9D' },
   ];
 
@@ -105,11 +105,11 @@ export default function TeacherDashboard() {
       </div>
 
       {/* Recent Quizzes */}
-      <Card>
+      {/* <Card>
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-gray-800">Recent Quizzes</h2>
           <button className="text-[#6C4EFF] font-semibold hover:underline">
-            View All →
+            View All
           </button>
         </div>
 
@@ -142,10 +142,10 @@ export default function TeacherDashboard() {
             </div>
           ))}
         </div>
-      </Card>
+      </Card> */}
 
       {/* Quick Actions */}
-      <div className="grid md:grid-cols-3 gap-6">
+      {/* <div className="grid md:grid-cols-3 gap-6">
         <Card hover className="text-center cursor-pointer">
           <div className="w-16 h-16 bg-gradient-to-br from-[#6C4EFF] to-[#9A7BFF] rounded-xl flex items-center justify-center mx-auto mb-4">
             <FileQuestion className="w-8 h-8 text-white" />
@@ -169,7 +169,7 @@ export default function TeacherDashboard() {
           <h3 className="font-bold text-lg text-gray-800 mb-2">Grade Submissions</h3>
           <p className="text-sm text-gray-600">Review and grade pending submissions</p>
         </Card>
-      </div>
+      </div> */}
     </div>
   );
 }

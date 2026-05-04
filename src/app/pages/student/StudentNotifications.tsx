@@ -80,30 +80,7 @@ export default function StudentNotifications() {
         </div>
       </div>
 
-      {/* Notification Stats */}
-      <div className="grid md:grid-cols-4 gap-6">
-        <Card className="text-center">
-          <div className="text-3xl font-bold text-[#6C4EFF] mb-2">{notifications.length}</div>
-          <div className="text-sm text-gray-600">Total Notifications</div>
-        </Card>
-        <Card className="text-center">
-          <div className="text-3xl font-bold text-green-600 mb-2">{unreadCount}</div>
-          <div className="text-sm text-gray-600">Unread</div>
-        </Card>
-        <Card className="text-center">
-          <div className="text-3xl font-bold text-orange-600 mb-2">
-            {notifications.filter(n => n.type === 'quiz').length}
-          </div>
-          <div className="text-sm text-gray-600">Quiz Notifications</div>
-        </Card>
-        <Card className="text-center">
-          <div className="text-3xl font-bold text-blue-600 mb-2">
-            {notifications.filter(n => n.type === 'result').length}
-          </div>
-          <div className="text-sm text-gray-600">Results Published</div>
-        </Card>
-      </div>
-
+    
       {/* Notifications List */}
       <div className="space-y-4">
         {notifications.map((notification) => {
