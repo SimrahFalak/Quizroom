@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import { useDispatch, useSelector } from 'react-redux';
 import { Clock, Flag, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -25,6 +25,71 @@ export default function QuizAttempt() {
   const [answers, setAnswers] = useState<Record<number, string | string[]>>({});
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Anti-cheat state
+  const [warningCount, setWarningCount] = useState(0);
+  const [autoSubmitTrigger, setAutoSubmitTrigger] = useState(false);
+
+  // Trigger auto submit when limit breached
+  useEffect(() => {
+    if (autoSubmitTrigger) {
+      // Small timeout to allow the final warning toast to be seen
+      const t = setTimeout(() => {
+        handleSubmit();
+      }, 500);
+      return () => clearTimeout(t);
+    }
+  }, [autoSubmitTrigger]);
+
+  // Anti-cheat detection effect
+  useEffect(() => {
+    if (!quiz || loading || error || success || isSubmitting) return;
+
+    const handleCheatDetected = (reason: string) => {
+      setWarningCount((prev) => {
+        const newCount = prev + 1;
+        if (newCount === 3) {
+          toast.error("Quiz Auto-Submitted", {
+            description: "You have exceeded the maximum number of warnings.",
+            duration: 5000,
+          });
+          setAutoSubmitTrigger(true);
+        } else if (newCount < 3) {
+          toast.warning("Warning!", {
+            description: `${reason} Detection ${newCount}/3. On the 3rd warning, your quiz will be auto-submitted.`,
+            duration: 8000,
+          });
+        }
+        return newCount;
+      });
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) handleCheatDetected("Tab switching is not allowed.");
+    };
+
+
+    const blockEvent = (e: Event, message: string) => {
+      e.preventDefault();
+      toast.warning(message, { id: message }); // Use message as id to prevent toast spam
+    };
+
+    const handleContextMenu = (e: MouseEvent) => blockEvent(e, "Right-clicking is disabled during the quiz.");
+    const handleCopy = (e: ClipboardEvent) => blockEvent(e, "Copying text is disabled during the quiz.");
+    const handlePaste = (e: ClipboardEvent) => blockEvent(e, "Pasting text is disabled during the quiz.");
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    document.addEventListener('contextmenu', handleContextMenu);
+    document.addEventListener('copy', handleCopy);
+    document.addEventListener('paste', handlePaste);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      document.removeEventListener('contextmenu', handleContextMenu);
+      document.removeEventListener('copy', handleCopy);
+      document.removeEventListener('paste', handlePaste);
+    };
+  }, [quiz, loading, error, success, isSubmitting]);
 
   // Fetch quiz on mount
   useEffect(() => {
