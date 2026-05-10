@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import { useDispatch, useSelector } from 'react-redux';
-import { ArrowLeft, Trophy, ChevronDown, ChevronUp, Eye } from 'lucide-react';
+import { ArrowLeft, Trophy, ChevronDown, ChevronUp, Eye, Download } from 'lucide-react';
 import { Card } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import ProgressBar from '../../components/ui/ProgressBar';
+import { generateTablePDF } from '../../utils/pdfUtils';
 import { fetchQuizById, fetchQuizAttempts, publishQuiz, saveQuizAttemptReview, clearSuccess, clearError } from '../../store/quizSlice';
 import { questionTypeMap } from '../../services/quizService';
 import type { AppDispatch, RootState } from '../../store/store';
@@ -131,6 +132,29 @@ export default function TeacherQuizDetail() {
     } catch (err) {
       console.error('Failed to save graded attempt:', err);
     }
+  };
+
+  const handleDownloadQuizResultsPDF = () => {
+    if (!currentQuiz || !reviewedAttempts.length) return;
+
+    const headers = ['Student Name', 'Email', 'Score', 'Percentage'];
+    const rows = reviewedAttempts.map((attempt: any) => [
+      attempt.student?.name || 'Unknown',
+      attempt.student?.email || 'Unknown',
+      `${attempt.score}/${attempt.maxScore}`,
+      `${attempt.percentage.toFixed(2)}%`,
+    ]);
+
+    generateTablePDF(
+      'Quiz Results',
+      headers,
+      rows,
+      `${currentQuiz.title}-results.pdf`,
+      {
+        quizName: currentQuiz.title,
+        instructorName: user?.name || 'Instructor',
+      }
+    );
   };
 
   // Calculate stats based on attempts
@@ -614,7 +638,18 @@ export default function TeacherQuizDetail() {
           {activeTab === 'results' && (
             <div className="space-y-6">
               <Card>
-                <h2 className="text-xl font-bold text-gray-800 mb-6">Quiz Results</h2>
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-xl font-bold text-gray-800">Quiz Results</h2>
+                  {reviewedAttempts && reviewedAttempts.length > 0 && (
+                    <button
+                      onClick={handleDownloadQuizResultsPDF}
+                      className="flex items-center gap-2 px-4 py-2 bg-[#6C4EFF] text-white rounded-lg hover:bg-[#5a3fe0] transition-colors font-medium"
+                    >
+                      <Download className="w-4 h-4" />
+                      Download PDF
+                    </button>
+                  )}
+                </div>
                 {reviewedAttempts && reviewedAttempts.length > 0 ? (
                   <div className="space-y-4">
                     {reviewedAttempts.map((attempt: any, idx: number) => (

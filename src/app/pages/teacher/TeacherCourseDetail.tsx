@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router';
 import { useDispatch, useSelector } from 'react-redux';
-import { ArrowLeft, Clock, FileQuestion, Plus } from 'lucide-react';
+import { ArrowLeft, Clock, FileQuestion, Plus, Download } from 'lucide-react';
 import { Card } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import ProgressBar from '../../components/ui/ProgressBar';
 import { Outlet } from 'react-router';
+import { generateTablePDF } from '../../utils/pdfUtils';
 import {
   fetchCourseDetails,
   fetchCourseQuizzes,
@@ -36,6 +37,29 @@ export default function TeacherCourseDetail() {
   const isQuizDetail = location.pathname.includes('/quiz/');
   const isCreateQuiz = location.pathname.includes('/create-quiz');
   const isChildRoute = isQuizDetail || isCreateQuiz;
+
+  const handleDownloadStudentListPDF = () => {
+    if (!courseDetails || !students.length) return;
+
+    const headers = ['Student Name', 'Email', 'Quizzes Taken', 'Average Score (%)'];
+    const rows = students.map((student) => [
+      student.name,
+      student.email,
+      student.quizzesTaken,
+      student.averageScore.toFixed(1),
+    ]);
+
+    generateTablePDF(
+      'Enrolled Students',
+      headers,
+      rows,
+      `${courseDetails.title}-students.pdf`,
+      {
+        courseName: courseDetails.title,
+        instructorName: user?.name || 'Instructor',
+      }
+    );
+  };
 
   // Loading skeleton component
   const LoadingSkeleton = () => (
@@ -192,7 +216,16 @@ export default function TeacherCourseDetail() {
                 </Card>
               ) : (
                 <Card>
-                  <h2 className="text-xl font-bold text-gray-800 mb-6">Enrolled Students ({students.length})</h2>
+                  <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-xl font-bold text-gray-800">Enrolled Students ({students.length})</h2>
+                    <button
+                      onClick={handleDownloadStudentListPDF}
+                      className="flex items-center gap-2 px-4 py-2 bg-[#6C4EFF] text-white rounded-lg hover:bg-[#5a3fe0] transition-colors font-medium"
+                    >
+                      <Download className="w-4 h-4" />
+                      Download PDF
+                    </button>
+                  </div>
 
                   <div className="overflow-x-auto">
                     <table className="w-full">

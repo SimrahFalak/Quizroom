@@ -1,17 +1,19 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'sonner';
-import { User, Lock, Bell, Mail, Globe, Shield, AlertCircle } from 'lucide-react';
+import { User, Lock, Bell, Mail, Globe, Shield, AlertCircle, Camera } from 'lucide-react';
 import { Card } from '../../components/ui/card';
 import { Input } from '../../components/ui/input';
 import { Button } from '../../components/ui/button';
 import { fetchStudentProfile, updateStudentProfile, clearError, clearSuccess } from '../../store/profileSlice.js';
+import { profileAPI } from '../../services/profileService.js';
 import { RootState, AppDispatch } from '../../store/store.ts';
 
-export default function StusdentSettings() {
+export default function StudentSettings() {
   const dispatch = useDispatch<AppDispatch>();
   const { user } = useSelector((state: RootState) => state.auth);
   const { student, loading, error, isSuccess } = useSelector((state: RootState) => state.profile);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -21,6 +23,7 @@ export default function StusdentSettings() {
     phone: '',
     bio: '',
   });
+  const [profilePicture, setProfilePicture] = useState<string | null>(null);
 
   useEffect(() => {
     if (user?.id) {
@@ -69,6 +72,55 @@ export default function StusdentSettings() {
     dispatch(clearError());
   };
 
+  const handleCameraClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user?.id) return;
+
+    // Check file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image size must be less than 5MB');
+      return;
+    }
+
+    // Check file type
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file');
+      return;
+    }
+
+    try {
+      toast.loading('Uploading profile picture...');
+      const response = await profileAPI.uploadStudentProfilePicture(user.id, file);
+      
+      if (response.data?.data?.profilePicture) {
+        setProfilePicture(response.data.data.profilePicture);
+        toast.dismiss();
+        toast.success('Profile picture uploaded successfully!');
+      }
+    } catch (error: any) {
+      toast.dismiss();
+      const errorMsg = error.response?.data?.message || 'Failed to upload profile picture';
+      toast.error(errorMsg);
+    }
+  };
+
+  const getInitials = (name: string): string => {
+    return name
+      .split(' ')
+      .map(word => word[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+  const initials = formData.name ? getInitials(formData.name) : 'S';
+  const displayedProfilePicture = profilePicture || student?.profilePicture;
+  const hasProfilePicture = !!displayedProfilePicture;
+
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -98,6 +150,37 @@ export default function StusdentSettings() {
         {/* Profile Information */}
         <Card>
           <h2 className="text-2xl font-bold text-gray-800 mb-6">Profile Information</h2>
+
+          {/* Profile Picture */}
+          <div className="flex flex-col items-center gap-6 mb-8 pb-8 border-b border-gray-200">
+            <div className="relative">
+              {hasProfilePicture ? (
+                <img
+                  src={displayedProfilePicture}
+                  alt={formData.name}
+                  className="w-32 h-32 rounded-full object-cover border-4 border-gray-200"
+                />
+              ) : (
+                <div className="w-32 h-32 rounded-full bg-gradient-to-br from-[#6C4EFF] to-[#9A7BFF] flex items-center justify-center border-4 border-gray-200">
+                  <span className="text-4xl font-bold text-white">{initials}</span>
+                </div>
+              )}
+              <button 
+                type="button"
+                onClick={handleCameraClick}
+                className="absolute bottom-0 right-0 bg-white rounded-full p-2 shadow-lg hover:bg-gray-100 transition-colors border-2 border-gray-200"
+              >
+                <Camera className="w-4 h-4 text-[#6C4EFF]" />
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="hidden"
+              />
+            </div>
+          </div>
 
           {/* Form Fields */}
           <div className="space-y-6">

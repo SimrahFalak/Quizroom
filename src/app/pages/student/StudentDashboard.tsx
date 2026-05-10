@@ -96,9 +96,8 @@ export default function StudentDashboard() {
   }));
 
   const quizDaySet = new Set(
-    studentQuizzes
+    upcomingQuizzes
       .filter((quiz: any) => Boolean(quiz.deadline))
-      .filter((quiz: any) => !attemptedQuizIds.has(String(quiz._id || quiz)))
       .map((quiz: any) => new Date(quiz.deadline))
       .filter((date: Date) => date.getMonth() === currentMonth && date.getFullYear() === currentYear)
       .map((date: Date) => date.getDate())

@@ -63,6 +63,7 @@ export default function CreateQuiz() {
     totalMarks: '100',
     deadline: '',
     negativeMarking: false,
+    randomizeQuestions: false,
   });
 
   // Fetch teacher courses on mount
@@ -147,6 +148,7 @@ export default function CreateQuiz() {
       totalMarks: parseInt(quizDetails.totalMarks) || 100,
       deadline: quizDetails.deadline || undefined,
       negativeMarking: quizDetails.negativeMarking,
+      randomizeQuestions: quizDetails.randomizeQuestions,
       questions: transformedQuestions,
       isPublished: false,
     };
@@ -205,6 +207,7 @@ export default function CreateQuiz() {
       totalMarks: parseInt(quizDetails.totalMarks) || 100,
       deadline: quizDetails.deadline || undefined,
       negativeMarking: quizDetails.negativeMarking,
+      randomizeQuestions: quizDetails.randomizeQuestions,
       questions: transformedQuestions,
       isPublished: true,
     };
@@ -389,6 +392,22 @@ export default function CreateQuiz() {
               <label htmlFor="negativeMarking" className="flex-1 cursor-pointer">
                 <div className="font-medium text-gray-800">Enable Negative Marking</div>
                 <div className="text-sm text-gray-600">Wrong answers will deduct 25% of question marks</div>
+              </label>
+            </div>
+
+            <div className="flex items-center gap-3 p-4">
+              <input
+                type="checkbox"
+                id="randomizeQuestions"
+                checked={quizDetails.randomizeQuestions}
+                onChange={(e) =>
+                  setQuizDetails({ ...quizDetails, randomizeQuestions: e.target.checked })
+                }
+                className="w-5 h-5 rounded border-gray-300 text-[#6C4EFF] focus:ring-2 focus:ring-[#6C4EFF] cursor-pointer"
+              />
+              <label htmlFor="randomizeQuestions" className="flex-1 cursor-pointer">
+                <div className="font-medium text-gray-800">Randomize Questions</div>
+                <div className="text-sm text-gray-600">Shuffle questions in random order for each attempt</div>
               </label>
             </div>
 
